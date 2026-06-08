@@ -18,3 +18,137 @@
 2026-06-08 00:19:59 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
 2026-06-08 00:45:02 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
 2026-06-08 00:45:02 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 13:42:14 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 13:42:14 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 13:56:04 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 13:56:04 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 13:56:04 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:04 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:05 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:05 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 13:56:05 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:05 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-08 13:56:05 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:05 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo/revision/main "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/scheduler/scheduler_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/text_encoder_2/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/text_encoder_2/model.fp16.safetensors "HTTP/1.1 302 Found"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/text_encoder/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer/merges.txt "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/text_encoder/model.fp16.safetensors "HTTP/1.1 302 Found"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer/special_tokens_map.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/scheduler%2Fscheduler_config.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/text_encoder_2%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer%2Ftokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/text_encoder%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer%2Fmerges.txt "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer%2Fspecial_tokens_map.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo/xet-read-token/71153311d3dbb46851df1931d3ca6e939de83304 "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo/xet-read-token/71153311d3dbb46851df1931d3ca6e939de83304 "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/scheduler%2Fscheduler_config.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/text_encoder_2%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer%2Ftokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/text_encoder%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer%2Fmerges.txt "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer%2Fspecial_tokens_map.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer/vocab.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer_2/special_tokens_map.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer_2/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer_2/vocab.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer_2/merges.txt "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/unet/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:07 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer%2Fvocab.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:07 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer_2%2Fspecial_tokens_map.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:07 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer_2%2Ftokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:07 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer_2%2Fvocab.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:07 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer_2%2Fmerges.txt "HTTP/1.1 200 OK"
+2026-06-08 13:56:07 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/unet%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:07 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer%2Fvocab.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:07 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer_2%2Fspecial_tokens_map.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:07 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/tokenizer_2%2Ftokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:07 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/unet/diffusion_pytorch_model.fp16.safetensors "HTTP/1.1 302 Found"
+2026-06-08 13:56:07 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/unet%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:07 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/vae/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 13:56:07 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/71153311d3dbb46851df1931d3ca6e939de83304/vae/diffusion_pytorch_model.fp16.safetensors "HTTP/1.1 302 Found"
+2026-06-08 13:56:07 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/vae%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-08 13:56:08 [INFO] HTTP Request: GET https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/vae%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-08 14:10:05 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 14:10:05 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 14:10:05 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:10:05 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-08 14:10:05 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:10:06 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 14:10:06 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:10:06 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:14:16 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 14:14:16 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 14:14:16 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:14:16 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-08 14:14:16 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:14:16 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 14:14:17 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:14:17 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:16:02 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 14:16:02 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 14:16:03 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:16:03 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-08 14:16:03 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:16:03 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 14:16:04 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:16:04 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:19:25 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 14:19:25 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 14:19:26 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:19:26 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:19:26 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 14:19:26 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:19:26 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-08 14:19:26 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:19:56 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 14:19:56 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 14:19:57 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:19:57 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:19:57 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 14:19:57 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:19:57 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-08 14:19:57 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:21:01 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 14:21:01 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 14:21:02 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:21:02 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:21:02 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 14:21:02 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:21:02 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-08 14:21:02 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:27:33 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 14:27:33 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 14:27:34 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:27:34 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-08 14:27:34 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:27:34 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 14:27:34 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:27:34 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:32:22 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 14:32:22 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 14:32:22 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:32:22 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-08 14:32:22 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:32:22 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 14:32:23 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:32:23 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:37:25 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 14:37:25 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 14:37:26 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:37:26 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-08 14:37:26 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:37:26 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 14:37:26 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:37:26 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:41:12 [INFO] Scan Finished. Vendor: NVIDIA | Card: NVIDIA GeForce RTX 4060 Laptop GPU | Calculated VRAM: 8.00GB
+2026-06-08 14:41:12 [INFO] Startup Clearance Granted. Target Engine Profile: MORPH_HIGH_NVIDIA
+2026-06-08 14:41:12 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:41:12 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"
+2026-06-08 14:41:13 [INFO] HTTP Request: GET https://huggingface.co/api/models/stabilityai/sdxl-turbo "HTTP/1.1 200 OK"
+2026-06-08 14:41:13 [INFO] HTTP Request: HEAD https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-08 14:41:13 [INFO] HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/stabilityai/sdxl-turbo/71153311d3dbb46851df1931d3ca6e939de83304/model_index.json "HTTP/1.1 200 OK"

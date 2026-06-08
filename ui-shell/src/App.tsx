@@ -13,6 +13,7 @@ export default function App() {
   const [activePhoto, setActivePhoto] = useState<MediaFile | null>(null);
   const [activeAudio, setActiveAudio] = useState<MediaFile | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
 
   // AI Generative Option State Handles
   const [aiPrompt, setAiPrompt] = useState<string>("");
@@ -36,6 +37,12 @@ export default function App() {
       fileMeta.type = "photo";
       setActivePhoto(fileMeta);
       setStudioLogs(`[OK] Loaded photo asset: ${file.name} (${fileMeta.size})`);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageBase64(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     } else if (audioExtensions.includes(file.type)) {
       fileMeta.type = "audio";
       setActiveAudio(fileMeta);
@@ -91,20 +98,28 @@ export default function App() {
         },
         body: JSON.stringify({
           prompt: aiPrompt,
-          steps: samplingSteps
+          steps: samplingSteps,
+          base_image_path: activePhoto ? 
+            (activePhoto.localUrl.startsWith("http") ? 
+              activePhoto.localUrl : 
+              imageBase64) : null
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Server returned error status: ${response.status}`);
-      }
-
       const data = await response.json();
+      if (response.ok) {
+        setStudioLogs(`[OK] ${data.log}\n[API SUCCESS] Rendering new asset context.`);
 
-      // Update the terminal output area with real values piped straight from Python
-      setStudioLogs(
-        `[OK] ${data.log}\n[API SUCCESS] Confirmed prompt receipt: "${data.prompt_received}"`
-      );
+        // BIND THE REAL IMAGE URL TO THE CANVAS VIEW WINDOW VIEWPORT:
+        setActivePhoto({
+          name: `AI_Generated_${data.prompt_received.replace(/\s+/g, '_')}.png`,
+          size: "Optimized 1024x1024 Canvas",
+          type: "photo",
+          localUrl: data.generated_image_url
+        });
+      } else {
+        setStudioLogs(`[ERROR] Generation failed: ${data.detail}`);
+      }
     } catch (error: any) {
       setStudioLogs(`[NETWORK ERROR] Failed to stream down to Python backend server: ${error.message}`);
     } finally {
@@ -150,7 +165,7 @@ export default function App() {
                   <div className="canvas-card">
                     <div className="card-header">
                       <h4>Visual Canvas Layer ({activePhoto.name})</h4>
-                      <button className="btn-clear" onClick={() => setActivePhoto(null)}>Remove</button>
+                      <button className="btn-clear" onClick={() => { setActivePhoto(null); setImageBase64(null); }}>Remove</button>
                     </div>
                     <div className="photo-preview-box">
                       <img src={activePhoto.localUrl} alt="Active Studio Layer" />
