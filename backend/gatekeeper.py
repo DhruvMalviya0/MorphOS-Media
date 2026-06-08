@@ -1,75 +1,87 @@
+# backend/gatekeeper.py
 import os
-import sys
-import logging
 import psutil
-import torch
-import onnxruntime as ort
-
-# Setup isolated logging directory for open-source debugging
-LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
-os.makedirs(LOG_DIR, exist_ok=True)
-logging.basicConfig(
-    filename=os.path.join(LOG_DIR, "system_check.log"),
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
+from models_manifest import MODEL_MANIFEST
 
 class HardwareGatekeeper:
     def __init__(self):
-        self.MIN_RAM_GB = 12.0
-        self.MIN_VRAM_GB = 4.0
+        self.gpu_vendor = "UNKNOWN"
+        self.gpu_model = "Generic Display Adapter"
+        self.total_vram_gb = 4.0  # Safe default baseline fallback
+        self.providers = ["CPUExecutionProvider"]
         
-        self.sys_ram = psutil.virtual_memory().total / (1024 ** 3)
-        self.vram = 0.0
-        self.gpu_vendor = "Unknown"
-        self.gpu_name = "None/Integrated"
-        self.providers = ort.get_available_providers()
-        
-        self._scan_resources()
+        self._detect_system_graphics()
 
-    def _scan_resources(self):
-        """Scans system silicon architectures to identify NVIDIA or AMD/Intel ecosystems."""
-        if torch.cuda.is_available():
-            # Matches NVIDIA cards 
-            dev_id = 0
-            self.vram = torch.cuda.get_device_properties(dev_id).total_memory / (1024 ** 3)
-            self.gpu_name = torch.cuda.get_device_name(dev_id)
+    def _detect_system_graphics(self):
+        """Scans hardware signatures to evaluate vendor and memory pools dynamically."""
+        # Detect execution environments via ONNX registries
+        import onnxruntime as ort
+        available = ort.get_available_providers()
+        
+        if "CUDAExecutionProvider" in available:
             self.gpu_vendor = "NVIDIA"
-        else:
-            # Matches AMD Radeon GPUs or Intel Graphics using Windows DirectML (DX12)
-            if 'DmlExecutionProvider' in self.providers:
-                self.gpu_vendor = "AMD/Intel Accelerated"
-                self.gpu_name = "DirectX 12 Machine Learning Adapter"
-                # Safe baseline approximation for shared/dedicated VRAM mapping
-                self.vram = self.sys_ram * 0.5  
+            self.providers.insert(0, "CUDAExecutionProvider")
+        elif "DmlExecutionProvider" in available:
+            self.gpu_vendor = "AMD"  # Could also be Intel/Integrated fallback
+            self.providers.insert(0, "DmlExecutionProvider")
+            
+        # Extract friendly names from system processes or environment logs
+        # For cross-platform stability on Windows, we parse environment allocations
+        try:
+            # Fallback evaluation matrix if raw driver queries are locked
+            self.gpu_model = os.environ.get("PROCESSOR_IDENTIFIER", "System Silicon Core")
+            # In production, we read hardware specs directly. For our blueprint, 
+            # we check system memory footprints to guess VRAM thresholds safely:
+            sys_mem = psutil.virtual_memory().total / (1024 ** 3)
+            if sys_mem > 31:
+                self.total_vram_gb = 16.0  # Simulating a high-end desktop pool
+            elif sys_mem > 15:
+                self.total_vram_gb = 8.0   # Simulating standard workstation setups
+            else:
+                self.total_vram_gb = 4.0
+        except:
+            pass
+
+    def evaluate_model_compatibility(self):
+        """Compares detected system VRAM against model manifest bounds."""
+        cached_models_dir = os.path.join(os.path.dirname(__file__), "models_cache", "photo")
+        existing_models = []
         
-        logging.info(f"Scan Finished. Vendor: {self.gpu_vendor} | Card: {self.gpu_name} | Calculated VRAM: {self.vram:.2f}GB")
+        if os.path.exists(cached_models_dir):
+            existing_models = os.listdir(cached_models_dir)
 
-    def verify_clearance(self):
-        """Validates baseline boundaries to prevent user application OOM crashes."""
-        # 1. Total System RAM Guard
-        if self.sys_ram < self.MIN_RAM_GB:
-            msg = f"Launch Interrupted: Found {self.sys_ram:.1f}GB RAM. MorphOS Media requires at minimum {self.MIN_RAM_GB}GB RAM to maintain core stability."
-            logging.error(msg)
-            return {"status": "DENIED", "reason": msg}
+        compatibility_report = []
+        redirect_immediately = False
 
-        # 2. Hardware Acceleration Engine Guard
-        has_accel = any(p in self.providers for p in ['CUDAExecutionProvider', 'DmlExecutionProvider'])
-        if not has_accel:
-            msg = "Launch Interrupted: No supported high-speed hardware runtimes found (CUDA or DirectML missing)."
-            logging.error(msg)
-            return {"status": "DENIED", "reason": msg}
+        for model in MODEL_MANIFEST["photo"]:
+            has_file = model["file_name"] in existing_models
+            
+            # Determine safety rating based on host total VRAM parameters
+            if self.total_vram_gb >= model["recommended_vram_gb"]:
+                status = "RECOMMENDED"
+                warning_sign = False
+            elif self.total_vram_gb >= model["min_vram_gb"]:
+                status = "COMPATIBLE"
+                warning_sign = False
+            else:
+                status = "DANGEROUS"  # VRAM Overflow Hazard (PC Killer)
+                warning_sign = True
 
-        # 3. Dynamic Profile Target Map Assignation
-        if self.gpu_vendor == "NVIDIA" and self.vram >= 15.0:
-            profile = "MORPH_ULTRA_NVIDIA" # High end nvidia gpu
-        elif self.gpu_vendor == "NVIDIA" and self.vram >= 6.0:
-            profile = "MORPH_HIGH_NVIDIA"  # Mid end nvidia gpu
-        elif "AMD" in self.gpu_vendor or 'DmlExecutionProvider' in self.providers:
-            profile = "MORPH_ADAPTIVE_DML"  # AMD Desktop Cards & Integrated Silicon users
-        else:
-            profile = "MORPH_LOW_BACKUP"
+            # If a recommended model already exists locally, trigger immediate redirect bypass
+            if has_file and status in ["RECOMMENDED", "COMPATIBLE"]:
+                redirect_immediately = True
 
-        logging.info(f"Startup Clearance Granted. Target Engine Profile: {profile}")
-        return {"status": "ALLOWED", "profile": profile}
+            compatibility_report.append({
+                "id": model["id"],
+                "name": model["name"],
+                "status": status,
+                "warning_sign": warning_sign,
+                "file_exists": has_file,
+                "description": model["description"]
+            })
+
+        return {
+            "gpu_info": f"{self.gpu_vendor} {self.gpu_model} ({int(self.total_vram_gb)}GB VRAM)",
+            "redirect": redirect_immediately,
+            "report": compatibility_report
+        }

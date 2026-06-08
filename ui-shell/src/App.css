@@ -292,3 +292,174 @@ html {
   overflow-y: auto;
   height: 70px;
 }
+
+/* Pre-flight Layout Additions */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.preflight-modal-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 32px;
+  width: 650px;
+  max-width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-hardware-desc {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-top: -6px;
+}
+
+.manifest-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 20px 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.manifest-item {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.manifest-item.card-status-dangerous {
+  border-color: #551a1a;
+}
+
+.manifest-item.card-status-recommended {
+  border-color: #2e442e;
+}
+
+.manifest-meta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.title-row h4 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.model-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.badge-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.badge-pill.status-recommended {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-pill.status-compatible {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.badge-pill.status-dangerous {
+  background-color: #dc3545;
+  color: white;
+  animation: pulse-warn 2s infinite;
+}
+
+@keyframes pulse-warn {
+  0% {
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.7;
+  }
+}
+
+.btn-select-model {
+  background-color: transparent;
+  border: 1px solid var(--text-main);
+  color: var(--text-main);
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.btn-select-model:hover {
+  background-color: var(--text-main);
+  color: var(--bg-primary);
+}
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.btn-close-modal:hover {
+  color: var(--text-main);
+  text-decoration: underline;
+}
+
+/* Hot-Switcher Dropdown Input styling */
+.model-dropdown-selector {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 10px;
+  border-radius: 4px;
+  font-family: inherit;
+  width: 100%;
+  cursor: pointer;
+}
+
+.model-dropdown-selector:focus {
+  outline: 1px solid var(--text-main);
+}
