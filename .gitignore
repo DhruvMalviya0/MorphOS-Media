@@ -11,6 +11,5 @@ __pycache__/
 # Application runtime files
 backend/logs/*.log
 backend/models_cache/
-
-# Block heavy model binaries from bloating GitHub
-backend/models_cache/
+backend/ui-shell/
+ui-shell/public/generated_outputs/

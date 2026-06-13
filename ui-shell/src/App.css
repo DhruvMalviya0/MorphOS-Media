@@ -292,3 +292,188 @@ html {
   overflow-y: auto;
   height: 70px;
 }
+
+/* Tabbed Control System */
+.studio-tabs {
+  display: flex;
+  gap: 8px;
+  background-color: var(--bg-primary);
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--text-main);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+  color: var(--bg-primary);
+  background-color: var(--text-main);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+.scrollable-tab-content {
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.scrollable-tab-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollable-tab-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+/* DAW Pipeline Sections */
+.daw-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.daw-section h4 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+/* DSP Metrics Dashboard */
+.dsp-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dsp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.dsp-stat-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.bpm-badge {
+  color: #00ffcc;
+  text-shadow: 0 0 8px rgba(0, 255, 204, 0.3);
+}
+
+.beat-offsets-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.beat-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.beat-pill {
+  font-size: 10px;
+  font-family: monospace;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 2px 6px;
+  border-radius: 10px;
+  color: #00ffcc;
+}
+
+/* DSP Loading State */
+.dsp-loading-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.dsp-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #00ffcc;
+  border-radius: 50%;
+  animation: dsp-spin 0.8s linear infinite;
+}
+
+@keyframes dsp-spin {
+  to { transform: rotate(360deg); }
+}
+
+.dsp-placeholder {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 16px;
+  text-align: center;
+  background-color: var(--bg-primary);
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+}
+
+.btn-tempo {
+  background-color: transparent;
+  border: 1px solid var(--text-main);
+  color: var(--text-main);
+  transition: all 0.2s ease;
+}
+
+.btn-tempo:hover:not(:disabled) {
+  background-color: var(--text-main);
+  color: var(--bg-primary);
+}

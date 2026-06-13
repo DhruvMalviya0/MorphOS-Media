@@ -99,6 +99,7 @@ class MorphPhotoEngine:
         if init_image is None:
             print("[Photo Engine Warning] No valid base image payload. Creating safe dark baseline template.")
             init_image = Image.new("RGB", (512, 512), (18, 18, 18))
+            strength = 1.0
 
         execution_steps = min(steps, 4)
 
