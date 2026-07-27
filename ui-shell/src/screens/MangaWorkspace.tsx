@@ -10,35 +10,59 @@ export default function MangaWorkspace({ onBack }: MangaWorkspaceProps) {
   const [readingFlow, setReadingFlow] = useState<'rtl' | 'ltr'>('rtl');
   const [parallaxDepth, setParallaxDepth] = useState<number>(0.5);
   const [isExtracting, setIsExtracting] = useState(false);
-  const [panels, setPanels] = useState<number[]>([]);
+  const [panels, setPanels] = useState<any[]>([]);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const processImageFile = (file: File) => {
+    const url = URL.createObjectURL(file);
+    setImageSrc(url);
+    setPanels([]);
+    
+    const reader = new FileReader();
+    reader.onloadend = () => setImageBase64(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const url = URL.createObjectURL(e.target.files[0]);
-      setImageSrc(url);
-      setPanels([]); // Reset panels on new image
+      processImageFile(e.target.files[0]);
     }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const url = URL.createObjectURL(e.dataTransfer.files[0]);
-      setImageSrc(url);
-      setPanels([]);
+      processImageFile(e.dataTransfer.files[0]);
     }
   };
 
-  const handleInitialize = () => {
-    if (!imageSrc) return;
+  const handleInitialize = async () => {
+    if (!imageBase64) return;
     setIsExtracting(true);
     setPanels([]);
-    // Simulate extraction delay
-    setTimeout(() => {
+    
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/manga/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image_data: imageBase64,
+          reading_flow: readingFlow
+        })
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        setPanels(data.panels || []);
+      } else {
+        console.error("Backend error:", data.detail);
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+    } finally {
       setIsExtracting(false);
-      setPanels([1, 2, 3, 4, 5]); // Simulate 5 extracted panels
-    }, 2000);
+    }
   };
 
   return (
@@ -195,13 +219,13 @@ export default function MangaWorkspace({ onBack }: MangaWorkspaceProps) {
               Upload an image and initialize extraction to populate timeline
             </div>
           ) : (
-            panels.map((panel, index) => (
-              <React.Fragment key={panel}>
+            panels.map((panelObj, index) => (
+              <React.Fragment key={panelObj.panel_id || index}>
                 <div className="w-32 h-24 bg-morph-card border border-morph-border rounded-lg flex flex-col items-center justify-center flex-shrink-0 hover:border-purple-500/50 transition-colors cursor-pointer group">
                   <div className="w-8 h-8 rounded-full bg-black/50 border border-gray-700 flex items-center justify-center mb-2 group-hover:bg-purple-500/20 group-hover:border-purple-500 group-hover:text-purple-400 transition-colors">
-                    {panel}
+                    {panelObj.panel_id || index + 1}
                   </div>
-                  <span className="text-xs text-gray-400">Panel {panel}</span>
+                  <span className="text-xs text-gray-400">Panel {panelObj.panel_id || index + 1}</span>
                 </div>
                 {index < panels.length - 1 && (
                   <ArrowRight className="w-5 h-5 text-gray-600 flex-shrink-0" />

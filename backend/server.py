@@ -209,13 +209,14 @@ def generate_audio_track(payload: AudioGenerateRequest):
         raise HTTPException(status_code=500, detail=f"Audio production failure: {str(e)}")
 
 class MangaProcessRequest(BaseModel):
-    image_base64: str
+    image_data: str
     reading_flow: Optional[str] = "rtl"
 
 @app.post("/api/manga/process")
 def process_manga_page(payload: MangaProcessRequest):
     try:
-        result = manga_engine.generate_motion_comic(payload.image_base64, payload.reading_flow)
+        # Use generate_motion_comic which calls extract_panels internally
+        result = manga_engine.generate_motion_comic(payload.image_data, payload.reading_flow)
         return {"status": "SUCCESS", **result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Manga pipeline failure: {str(e)}")

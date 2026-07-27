@@ -5,17 +5,21 @@ class MorphMangaEngine:
     def __init__(self):
         print("[Manga Engine] Initialized MorphMangaEngine pipeline orchestrator")
 
+    def extract_panels(self, base64_image: str, reading_direction: str = "rtl"):
+        """Simulate YOLOv8 panel extraction for Phase 2 as requested"""
+        print(f"[Manga Engine] Simulating panel extraction (Flow: {reading_direction})...")
+        time.sleep(2)
+        return [
+            {"panel_id": 1, "bbox": [0, 0, 500, 300]},
+            {"panel_id": 2, "bbox": [0, 310, 500, 600]},
+            {"panel_id": 3, "bbox": [510, 0, 1000, 300]},
+            {"panel_id": 4, "bbox": [510, 310, 1000, 600]}
+        ]
+
     def _dummy_yolo_extract(self, image_base64: str):
         """Phase 3 Dummy: Simulate YOLOv8 panel extraction"""
         print("[Manga Engine] [Step 1] Running YOLOv8 Panel Extraction...")
-        time.sleep(0.5)
-        # Return 4 dummy panels [x1, y1, x2, y2]
-        return [
-            [0, 0, 100, 100],
-            [110, 0, 200, 100],
-            [0, 110, 200, 200],
-            [210, 0, 300, 200]
-        ]
+        return self.extract_panels(image_base64, "rtl")
 
     def _dummy_sam_depth_parallax(self, panels):
         """Phase 3 Dummy: Simulate Depth Anything and SAM for parallax"""
@@ -62,5 +66,4 @@ class MorphMangaEngine:
         }
 
     # Keep old method for backward compatibility if needed
-    def extract_panels(self, image_base64: str):
-        return self._dummy_yolo_extract(image_base64)
+    # (Removed since we just promoted it to the top level)
