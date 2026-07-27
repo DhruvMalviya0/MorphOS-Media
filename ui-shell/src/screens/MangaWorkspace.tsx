@@ -221,11 +221,22 @@ export default function MangaWorkspace({ onBack }: MangaWorkspaceProps) {
           ) : (
             panels.map((panelObj, index) => (
               <React.Fragment key={panelObj.panel_id || index}>
-                <div className="w-32 h-24 bg-morph-card border border-morph-border rounded-lg flex flex-col items-center justify-center flex-shrink-0 hover:border-purple-500/50 transition-colors cursor-pointer group">
-                  <div className="w-8 h-8 rounded-full bg-black/50 border border-gray-700 flex items-center justify-center mb-2 group-hover:bg-purple-500/20 group-hover:border-purple-500 group-hover:text-purple-400 transition-colors">
-                    {panelObj.panel_id || index + 1}
-                  </div>
-                  <span className="text-xs text-gray-400">Panel {panelObj.panel_id || index + 1}</span>
+                <div className="w-32 h-24 bg-morph-card border border-morph-border rounded-lg flex flex-col items-center justify-center flex-shrink-0 hover:border-purple-500/50 transition-colors cursor-pointer group relative overflow-hidden">
+                  {panelObj.cropped_image_base64 ? (
+                    <img src={panelObj.cropped_image_base64} alt={`Panel ${panelObj.panel_id}`} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-black/50 border border-gray-700 flex items-center justify-center mb-2 group-hover:bg-purple-500/20 group-hover:border-purple-500 group-hover:text-purple-400 transition-colors">
+                      {panelObj.panel_id || index + 1}
+                    </div>
+                  )}
+                  {!panelObj.cropped_image_base64 && (
+                    <span className="text-xs text-gray-400">Panel {panelObj.panel_id || index + 1}</span>
+                  )}
+                  {panelObj.cropped_image_base64 && (
+                    <div className="absolute top-1 left-1 bg-black/70 px-1.5 rounded text-[10px] font-bold border border-gray-700">
+                      P{panelObj.panel_id || index + 1}
+                    </div>
+                  )}
                 </div>
                 {index < panels.length - 1 && (
                   <ArrowRight className="w-5 h-5 text-gray-600 flex-shrink-0" />

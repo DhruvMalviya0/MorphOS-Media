@@ -1,25 +1,98 @@
 import os
 import time
+import base64
+import cv2
+import numpy as np
 
 class MorphMangaEngine:
     def __init__(self):
         print("[Manga Engine] Initialized MorphMangaEngine pipeline orchestrator")
 
     def extract_panels(self, base64_image: str, reading_direction: str = "rtl"):
-        """Simulate YOLOv8 panel extraction for Phase 2 as requested"""
-        print(f"[Manga Engine] Simulating panel extraction (Flow: {reading_direction})...")
-        time.sleep(2)
-        return [
-            {"panel_id": 1, "bbox": [0, 0, 500, 300]},
-            {"panel_id": 2, "bbox": [0, 310, 500, 600]},
-            {"panel_id": 3, "bbox": [510, 0, 1000, 300]},
-            {"panel_id": 4, "bbox": [510, 310, 1000, 600]}
-        ]
+        """Extract panels using OpenCV contour detection as fallback"""
+        print(f"[Manga Engine] Running OpenCV panel extraction (Flow: {reading_direction})...")
+        
+        # 1. Decode base64 to OpenCV image
+        if "," in base64_image:
+            base64_data = base64_image.split(",")[1]
+        else:
+            base64_data = base64_image
+            
+        img_data = base64.b64decode(base64_data)
+        np_arr = np.frombuffer(img_data, np.uint8)
+        img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        
+        if img is None:
+            raise ValueError("Failed to decode image from base64")
 
-    def _dummy_yolo_extract(self, image_base64: str):
-        """Phase 3 Dummy: Simulate YOLOv8 panel extraction"""
-        print("[Manga Engine] [Step 1] Running YOLOv8 Panel Extraction...")
-        return self.extract_panels(image_base64, "rtl")
+        # 2. Grayscale and Inverted Threshold
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # Assuming black panel borders (0) become white (255)
+        _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
+        
+        # 3. Find Contours
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        total_area = img.shape[0] * img.shape[1]
+        valid_boxes = []
+        
+        # 4 & 5. Loop and Filter Noise (> 3% area)
+        for c in contours:
+            x, y, w, h = cv2.boundingRect(c)
+            if (w * h) > (0.03 * total_area):
+                # 6. Convert to [x1, y1, x2, y2]
+                valid_boxes.append([x, y, x + w, y + h])
+                
+        # 7. Reading Flow Sorting Logic
+        # Group by rows based on y-coordinate proximity (e.g. within 50 pixels)
+        valid_boxes.sort(key=lambda b: b[1]) # Sort top-to-bottom primarily
+        
+        rows = []
+        current_row = []
+        for box in valid_boxes:
+            if not current_row:
+                current_row.append(box)
+            else:
+                # If y1 is within 50px of the current row's average y1, add to row
+                avg_y = sum(b[1] for b in current_row) / len(current_row)
+                if abs(box[1] - avg_y) < 50:
+                    current_row.append(box)
+                else:
+                    rows.append(current_row)
+                    current_row = [box]
+        if current_row:
+            rows.append(current_row)
+            
+        sorted_boxes = []
+        for row in rows:
+            if reading_direction == "rtl":
+                # Right-to-Left: sort x1 descending
+                row.sort(key=lambda b: b[0], reverse=True)
+            else:
+                # Left-to-Right: sort x1 ascending
+                row.sort(key=lambda b: b[0])
+            sorted_boxes.extend(row)
+            
+        # 8. Crop and format response
+        results = []
+        for i, box in enumerate(sorted_boxes):
+            x1, y1, x2, y2 = box
+            
+            # Crop image
+            cropped_img = img[y1:y2, x1:x2]
+            
+            # Encode cropped image back to base64
+            _, buffer = cv2.imencode('.jpg', cropped_img)
+            cropped_b64 = base64.b64encode(buffer).decode('utf-8')
+            
+            results.append({
+                "panel_id": i + 1,
+                "bbox": [x1, y1, x2, y2],
+                "cropped_image_base64": f"data:image/jpeg;base64,{cropped_b64}"
+            })
+            
+        print(f"[Manga Engine] Found {len(results)} valid panels.")
+        return results
 
     def _dummy_sam_depth_parallax(self, panels):
         """Phase 3 Dummy: Simulate Depth Anything and SAM for parallax"""
@@ -46,7 +119,7 @@ class MorphMangaEngine:
         print(f"\n--- Starting Manga Motion Pipeline (Flow: {reading_flow}) ---")
         
         # 1. Panel Extraction
-        panels = self._dummy_yolo_extract(image_base64)
+        panels = self.extract_panels(image_base64, reading_flow)
         
         # 2. Depth & Parallax Masking
         frames = self._dummy_sam_depth_parallax(panels)
