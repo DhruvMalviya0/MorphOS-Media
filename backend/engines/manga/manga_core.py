@@ -3,10 +3,28 @@ import time
 import base64
 import cv2
 import numpy as np
+from ultralytics import YOLO
 
 class MorphMangaEngine:
     def __init__(self):
         print("[Manga Engine] Initialized MorphMangaEngine pipeline orchestrator")
+        
+        # Dynamically resolve the absolute path to the backend/models directory
+        # __file__ is backend/engines/manga/manga_core.py
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Go up two levels to reach the 'backend' folder, then into 'models'
+        model_path = os.path.abspath(os.path.join(current_dir, "../../models/comic_yolov8.pt"))
+        
+        print(f"[Manga Engine] Attempting to load YOLO model from: {model_path}")
+        
+        try:
+            self.yolo = YOLO(model_path)
+            print("[Manga Engine] Successfully loaded custom manga weights!")
+        except Exception as e:
+            print(f"[Manga Engine] WARNING: Failed to load custom weights. Error: {e}")
+            print("[Manga Engine] Falling back to base COCO model (yolov8n.pt)...")
+            self.yolo = YOLO('yolov8n.pt')
 
     def extract_panels(self, base64_image: str, reading_direction: str = "rtl"):
         """Extract panels using OpenCV contour detection as fallback"""
@@ -25,34 +43,42 @@ class MorphMangaEngine:
         if img is None:
             raise ValueError("Failed to decode image from base64")
 
-        # 1. Grayscale
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-        # 2. Isolate Ink (White Ink, Black Background)
-        _, ink_mask = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
-
-        # 3. Aggressive Smear (Seals broken hand-drawn borders)
-        # Using a massive kernel to turn sketchy panel borders into solid thick walls
-        kernel = np.ones((17, 17), np.uint8)
-        smeared_ink = cv2.dilate(ink_mask, kernel, iterations=2)
-
-        # 4. Invert Mask to isolate Negative Space (White Panels, Black Walls)
-        panel_mask = cv2.bitwise_not(smeared_ink)
-
-        # 5. Find Contours of the Negative Space islands
-        # RETR_EXTERNAL ensures we only get the outer boundary of the panels, ignoring internal holes
-        contours, _ = cv2.findContours(panel_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        total_area = img.shape[0] * img.shape[1]
+        # 2. Run AI Inference with YOLO
+        print("[Manga Engine] Running YOLO object detection...")
+        results_yolo = self.yolo(img)
+        
+        # 3. Extract bounding boxes and filter
+        boxes_data = results_yolo[0].boxes
+        
+        # Debug: Print the dictionary of classes this model knows
+        print(f"\n--- YOLO DEBUG INFO ---")
+        print(f"Model Classes: {self.yolo.names}")
+        print(f"Total objects found: {len(boxes_data)}")
+        
         valid_boxes = []
-
-        for contour in contours:
-            x, y, w, h = cv2.boundingRect(contour)
-            area = w * h
+        
+        for i in range(len(boxes_data)):
+            # Get the class name of the detected object
+            class_id = int(boxes_data.cls[i].item())
+            class_name = self.yolo.names[class_id].lower()
             
-            # Keep negative space islands between 2% and 80% of the total page area
-            if 0.02 * total_area < area < 0.80 * total_area:
-                valid_boxes.append([x, y, x+w, y+h])
+            # Extract coordinates
+            coords = boxes_data.xyxy[i].cpu().numpy()
+            x1, y1, x2, y2 = map(int, coords)
+            
+            # CRITICAL: The Manga109 model uses 'frame', not 'panel'!
+            if 'frame' in class_name or 'panel' in class_name:
+                valid_boxes.append([x1, y1, x2, y2])
+                print(f"KEEPING: {class_name}")
+            else:
+                print(f"REJECTING: {class_name}")
+                
+        print(f"Total valid frames kept: {len(valid_boxes)}\n-----------------------\n")
+                
+        # CRITICAL FAILSAFE: If no panels passed the filters (or no detections), return the entire image as one panel
+        if len(valid_boxes) == 0:
+            print("FAILSAFE TRIGGERED: No frames found. Returning full page.")
+            valid_boxes.append([0, 0, img.shape[1], img.shape[0]])
                 
         # 7. Reading Flow Sorting Logic
         # Group by rows based on y-coordinate proximity (e.g. within 50 pixels)

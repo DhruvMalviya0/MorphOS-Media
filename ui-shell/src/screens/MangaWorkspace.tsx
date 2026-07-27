@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ArrowLeft, Upload, ArrowRight, Loader2, Maximize, Sliders, BookOpen, X } from 'lucide-react';
+import { ArrowLeft, Upload, ArrowRight, Loader2, Maximize, Sliders, BookOpen } from 'lucide-react';
 
 interface MangaWorkspaceProps {
   onBack: () => void;
@@ -13,7 +13,7 @@ export default function MangaWorkspace({ onBack, addRecentProject }: MangaWorksp
   const [isExtracting, setIsExtracting] = useState(false);
   const [panels, setPanels] = useState<any[]>([]);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processImageFile = (file: File) => {
@@ -227,10 +227,14 @@ export default function MangaWorkspace({ onBack, addRecentProject }: MangaWorksp
             panels.map((panelObj, index) => (
               <React.Fragment key={panelObj.panel_id || index}>
                 <div 
-                  className="w-32 h-24 bg-morph-card border border-morph-border rounded-lg flex flex-col items-center justify-center flex-shrink-0 hover:border-purple-500/50 transition-colors cursor-pointer group relative overflow-hidden"
+                  className="w-32 h-24 bg-morph-card border border-morph-border rounded-lg flex flex-col items-center justify-center flex-shrink-0 hover:border-purple-500/50 transition-colors cursor-pointer hover:opacity-80 transition-opacity group relative overflow-hidden"
                   onClick={() => {
                     if (panelObj.cropped_image_base64) {
-                      setExpandedImage(panelObj.cropped_image_base64);
+                      // Remove the data URI prefix if it exists so we just store the raw base64 or pass the whole thing
+                      // The user's modal uses: src={`data:image/jpeg;base64,${selectedImage}`} 
+                      // So we must pass the raw base64 data.
+                      const base64Data = panelObj.cropped_image_base64.replace("data:image/jpeg;base64,", "");
+                      setSelectedImage(base64Data);
                     }
                   }}
                 >
@@ -259,24 +263,23 @@ export default function MangaWorkspace({ onBack, addRecentProject }: MangaWorksp
         </div>
       </div>
 
-      {/* Expanded Image Modal */}
-      {expandedImage && (
+      {selectedImage && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-          onClick={() => setExpandedImage(null)}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-8 backdrop-blur-sm"
+          onClick={() => setSelectedImage(null)}
         >
-          <div className="relative w-full max-w-4xl max-h-[90vh] p-4 flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
-            <button 
-              className="absolute top-4 right-4 p-2 bg-morph-card/50 hover:bg-morph-card rounded-full text-gray-300 hover:text-white transition-colors border border-morph-border"
-              onClick={() => setExpandedImage(null)}
-            >
-              <X className="w-5 h-5" />
-            </button>
+          <div className="relative max-w-full max-h-full">
             <img 
-              src={expandedImage} 
-              alt="Expanded Panel" 
-              className="w-full h-full object-contain max-h-[85vh] rounded-lg shadow-2xl border border-morph-border"
+              src={`data:image/jpeg;base64,${selectedImage}`} 
+              alt="Panel Full View" 
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl border border-[#333]"
             />
+            <button 
+              className="absolute -top-4 -right-4 w-8 h-8 bg-[#262626] text-white rounded-full flex items-center justify-center border border-[#333] hover:bg-red-500 transition-colors"
+              onClick={(e) => { e.stopPropagation(); setSelectedImage(null); }}
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}
