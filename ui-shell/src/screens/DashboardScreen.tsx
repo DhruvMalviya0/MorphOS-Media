@@ -2,9 +2,6 @@ import {
   Search,
   LogOut,
   User,
-  Image,
-  Music,
-  Film,
   Clock,
   ChevronRight,
   Sparkles,
@@ -13,8 +10,11 @@ import {
   BookOpen,
 } from "lucide-react";
 
+import { RecentProject } from "../App";
+
 interface DashboardScreenProps {
   username: string;
+  recentProjects: RecentProject[];
   onSelectWorkspace: (workspace: string) => void;
   onLogout: () => void;
 }
@@ -33,13 +33,6 @@ interface ModuleCard {
   gradientTo: string;
 }
 
-interface RecentProject {
-  name: string;
-  type: "image" | "audio" | "animation";
-  timestamp: string;
-  icon: typeof Image;
-  accentColor: string;
-}
 
 const modules: ModuleCard[] = [
   {
@@ -77,13 +70,6 @@ const modules: ModuleCard[] = [
   },
 ];
 
-const recentProjects: RecentProject[] = [
-  { name: "Gintoki Tabby Cat Edit", type: "image", timestamp: "2 hours ago", icon: Image, accentColor: "#4f8fff" },
-  { name: "Lofi Glass & Rain", type: "audio", timestamp: "Yesterday", icon: Music, accentColor: "#a855f7" },
-  { name: "Chapter 1: The Awakening", type: "animation", timestamp: "3 days ago", icon: Film, accentColor: "#00e5c3" },
-  { name: "Sunset Gradient Pack", type: "image", timestamp: "Last week", icon: Image, accentColor: "#4f8fff" },
-  { name: "Ambient Forest Loop", type: "audio", timestamp: "Last week", icon: Music, accentColor: "#a855f7" },
-];
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -92,7 +78,7 @@ function getGreeting(): string {
   return "Good evening";
 }
 
-export default function DashboardScreen({ username, onSelectWorkspace, onLogout }: DashboardScreenProps) {
+export default function DashboardScreen({ username, recentProjects, onSelectWorkspace, onLogout }: DashboardScreenProps) {
   return (
     <div className="flex flex-col h-screen bg-morph-bg font-sans">
       {/* ─── Top Navigation Bar ─────────────────────────────────────────── */}

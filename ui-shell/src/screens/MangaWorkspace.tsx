@@ -1,17 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { ArrowLeft, Upload, ArrowRight, Loader2, Maximize, Sliders } from 'lucide-react';
+import { ArrowLeft, Upload, ArrowRight, Loader2, Maximize, Sliders, BookOpen, X } from 'lucide-react';
 
 interface MangaWorkspaceProps {
   onBack: () => void;
+  addRecentProject?: (name: string, type: string, icon: any, accentColor: string) => void;
 }
 
-export default function MangaWorkspace({ onBack }: MangaWorkspaceProps) {
+export default function MangaWorkspace({ onBack, addRecentProject }: MangaWorkspaceProps) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [readingFlow, setReadingFlow] = useState<'rtl' | 'ltr'>('rtl');
   const [parallaxDepth, setParallaxDepth] = useState<number>(0.5);
   const [isExtracting, setIsExtracting] = useState(false);
   const [panels, setPanels] = useState<any[]>([]);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processImageFile = (file: File) => {
@@ -55,6 +57,9 @@ export default function MangaWorkspace({ onBack }: MangaWorkspaceProps) {
       const data = await response.json();
       if (response.ok) {
         setPanels(data.panels || []);
+        if (addRecentProject) {
+          addRecentProject("Manga Extraction Activity", "animation", BookOpen, "#00e5c3");
+        }
       } else {
         console.error("Backend error:", data.detail);
       }
@@ -221,7 +226,14 @@ export default function MangaWorkspace({ onBack }: MangaWorkspaceProps) {
           ) : (
             panels.map((panelObj, index) => (
               <React.Fragment key={panelObj.panel_id || index}>
-                <div className="w-32 h-24 bg-morph-card border border-morph-border rounded-lg flex flex-col items-center justify-center flex-shrink-0 hover:border-purple-500/50 transition-colors cursor-pointer group relative overflow-hidden">
+                <div 
+                  className="w-32 h-24 bg-morph-card border border-morph-border rounded-lg flex flex-col items-center justify-center flex-shrink-0 hover:border-purple-500/50 transition-colors cursor-pointer group relative overflow-hidden"
+                  onClick={() => {
+                    if (panelObj.cropped_image_base64) {
+                      setExpandedImage(panelObj.cropped_image_base64);
+                    }
+                  }}
+                >
                   {panelObj.cropped_image_base64 ? (
                     <img src={panelObj.cropped_image_base64} alt={`Panel ${panelObj.panel_id}`} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
                   ) : (
@@ -246,6 +258,28 @@ export default function MangaWorkspace({ onBack }: MangaWorkspaceProps) {
           )}
         </div>
       </div>
+
+      {/* Expanded Image Modal */}
+      {expandedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={() => setExpandedImage(null)}
+        >
+          <div className="relative w-full max-w-4xl max-h-[90vh] p-4 flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
+            <button 
+              className="absolute top-4 right-4 p-2 bg-morph-card/50 hover:bg-morph-card rounded-full text-gray-300 hover:text-white transition-colors border border-morph-border"
+              onClick={() => setExpandedImage(null)}
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <img 
+              src={expandedImage} 
+              alt="Expanded Panel" 
+              className="w-full h-full object-contain max-h-[85vh] rounded-lg shadow-2xl border border-morph-border"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

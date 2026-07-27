@@ -25,21 +25,27 @@ class MorphMangaEngine:
         if img is None:
             raise ValueError("Failed to decode image from base64")
 
-        # 2. Grayscale and Inverted Threshold
+        # 2. Grayscale, Canny Edge Detection, and Dilation
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        # Assuming black panel borders (0) become white (255)
-        _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
+        
+        # Canny Edge Detection
+        edges = cv2.Canny(gray, 50, 150)
+        
+        # Morphological Dilation to close gaps in panel borders
+        kernel = np.ones((7, 7), np.uint8)
+        dilated = cv2.dilate(edges, kernel, iterations=2)
         
         # 3. Find Contours
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
         total_area = img.shape[0] * img.shape[1]
         valid_boxes = []
         
-        # 4 & 5. Loop and Filter Noise (> 3% area)
+        # 4 & 5. Loop and Filter Noise (> 3% area and < 95% area)
         for c in contours:
             x, y, w, h = cv2.boundingRect(c)
-            if (w * h) > (0.03 * total_area):
+            area = w * h
+            if (0.03 * total_area) < area < (0.95 * total_area):
                 # 6. Convert to [x1, y1, x2, y2]
                 valid_boxes.append([x, y, x + w, y + h])
                 
