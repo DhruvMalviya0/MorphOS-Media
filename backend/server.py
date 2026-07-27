@@ -1,10 +1,13 @@
+import os
+# os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"  # Drops annoying warnings
+# os.environ["HF_HUB_OFFLINE"] = "1"            # ONE-TIME DOWNLOAD MODE: uncomment to restore offline lock after model is cached
+
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List
-import os
 
 from gatekeeper import HardwareGatekeeper
 from engines.photo.photo_core import MorphPhotoEngine
@@ -35,8 +38,9 @@ class ModelSelectRequest(BaseModel):
 class GenerationRequest(BaseModel):
     prompt: str
     steps: int
-    base_image_path: Optional[str] = None  # New path field handle
-    strength: Optional[float] = 0.5
+    base_image_path: Optional[str] = None  # Base image field (base64 or URL)
+    mask_image: Optional[str] = None        # Inpainting mask: BLACK=regenerate, WHITE=preserve
+    strength: Optional[float] = 0.85        # Denoise strength inside mask region (0.85 = strong regen while respecting edges)
 
 class AudioRequest(BaseModel):
     file_path: str
@@ -66,12 +70,13 @@ def generate_photo(payload: GenerationRequest):
         raise HTTPException(status_code=400, detail="No active model initialized.")
     
     try:
-        # Pass the local disk path parameter down into your optimized photo processing engine
+        # Pass base image, inpainting mask, and strength into the photo engine
         public_filename, engine_report = photo_engine.process_canvas_layer(
             prompt=payload.prompt, 
             steps=payload.steps,
             base_image_path=payload.base_image_path,
-            strength=payload.strength if payload.strength is not None else 0.5
+            strength=payload.strength if payload.strength is not None else 0.85,
+            mask_image_data=payload.mask_image
         )
         
         if not public_filename:

@@ -206,11 +206,25 @@ class MorphAudioEngine:
         print(f"[Audio Generative AI] Synthesizing: '{prompt}' for {duration_seconds}s")
         
         if self.model is None:
-            self.processor = AutoProcessor.from_pretrained("facebook/musicgen-medium")
-            self.model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-medium")
+            print("[Audio Generative AI] Initializing Meta MusicGen-Medium layers strictly offline...")
+            self.processor = AutoProcessor.from_pretrained(
+                "facebook/musicgen-medium",
+                local_files_only=True
+            )
+            self.model = MusicgenForConditionalGeneration.from_pretrained(
+                "facebook/musicgen-medium",
+                local_files_only=True
+            )
             if torch.cuda.is_available():
                 self.model.to("cuda")
-                self.model.enable_attention_slicing()
+                # enable_attention_slicing() is a Diffusers-only method and does not
+                # exist on Transformers models like MusicgenForConditionalGeneration.
+                # Use PyTorch's built-in Flash SDP for equivalent VRAM savings instead.
+                try:
+                    torch.backends.cuda.enable_flash_sdp(True)
+                    print("[Audio Engine] Flash SDP attention enabled for VRAM optimization.")
+                except Exception:
+                    pass  # Older PyTorch versions may not support this; safe to skip.
         
         inputs = self.processor(text=[prompt], padding=True, return_tensors="pt")
         if torch.cuda.is_available():
