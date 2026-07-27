@@ -12,6 +12,7 @@ from typing import Optional, List
 from gatekeeper import HardwareGatekeeper
 from engines.photo.photo_core import MorphPhotoEngine
 from engines.audio.audio_core import MorphAudioEngine
+from engines.manga.manga_core import MorphMangaEngine
 
 app = FastAPI(title="MorphOS Media Studio Universal Core API")
 
@@ -31,6 +32,7 @@ gatekeeper = HardwareGatekeeper()
 clearance = gatekeeper.verify_clearance()
 photo_engine = MorphPhotoEngine(clearance["profile"])
 audio_engine = MorphAudioEngine(gatekeeper.providers)
+manga_engine = MorphMangaEngine()
 
 class ModelSelectRequest(BaseModel):
     model_id: str
@@ -205,6 +207,18 @@ def generate_audio_track(payload: AudioGenerateRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Audio production failure: {str(e)}")
+
+class MangaProcessRequest(BaseModel):
+    image_base64: str
+    reading_flow: Optional[str] = "rtl"
+
+@app.post("/api/manga/process")
+def process_manga_page(payload: MangaProcessRequest):
+    try:
+        panels = manga_engine.extract_panels(payload.image_base64)
+        return {"status": "SUCCESS", "panels": panels}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Manga pipeline failure: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
