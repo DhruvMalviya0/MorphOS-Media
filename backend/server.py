@@ -215,8 +215,8 @@ class MangaProcessRequest(BaseModel):
 @app.post("/api/manga/process")
 def process_manga_page(payload: MangaProcessRequest):
     try:
-        panels = manga_engine.extract_panels(payload.image_base64)
-        return {"status": "SUCCESS", "panels": panels}
+        result = manga_engine.generate_motion_comic(payload.image_base64, payload.reading_flow)
+        return {"status": "SUCCESS", **result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Manga pipeline failure: {str(e)}")
 
