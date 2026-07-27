@@ -25,36 +25,34 @@ class MorphMangaEngine:
         if img is None:
             raise ValueError("Failed to decode image from base64")
 
-        # 2. Grayscale, Canny Edge Detection, and Dilation
+        # 1. Grayscale
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        
-        # Canny Edge Detection
-        edges = cv2.Canny(gray, 50, 150)
-        
-        # Morphological Dilation to close gaps in panel borders
-        kernel = np.ones((7, 7), np.uint8)
-        dilated = cv2.dilate(edges, kernel, iterations=2)
-        
-        # 3. Find Contours
-        contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        
+
+        # 2. Isolate Ink (White Ink, Black Background)
+        _, ink_mask = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
+
+        # 3. Aggressive Smear (Seals broken hand-drawn borders)
+        # Using a massive kernel to turn sketchy panel borders into solid thick walls
+        kernel = np.ones((17, 17), np.uint8)
+        smeared_ink = cv2.dilate(ink_mask, kernel, iterations=2)
+
+        # 4. Invert Mask to isolate Negative Space (White Panels, Black Walls)
+        panel_mask = cv2.bitwise_not(smeared_ink)
+
+        # 5. Find Contours of the Negative Space islands
+        # RETR_EXTERNAL ensures we only get the outer boundary of the panels, ignoring internal holes
+        contours, _ = cv2.findContours(panel_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
         total_area = img.shape[0] * img.shape[1]
         valid_boxes = []
-        
-        # 4 & 5. Loop and Filter Noise (> 1.5% area and < 90% area)
-        for c in contours:
-            x, y, w, h = cv2.boundingRect(c)
+
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
             area = w * h
-            if (0.015 * total_area) < area < (0.90 * total_area):
-                # Filter duplicates (inner and outer contours of the same dilated border)
-                is_dup = False
-                for bx, by, bx2, by2 in valid_boxes:
-                    if abs(x - bx) < 20 and abs(y - by) < 20:
-                        is_dup = True
-                        break
-                if not is_dup:
-                    # 6. Convert to [x1, y1, x2, y2]
-                    valid_boxes.append([x, y, x + w, y + h])
+            
+            # Keep negative space islands between 2% and 80% of the total page area
+            if 0.02 * total_area < area < 0.80 * total_area:
+                valid_boxes.append([x, y, x+w, y+h])
                 
         # 7. Reading Flow Sorting Logic
         # Group by rows based on y-coordinate proximity (e.g. within 50 pixels)
