@@ -36,18 +36,25 @@ class MorphMangaEngine:
         dilated = cv2.dilate(edges, kernel, iterations=2)
         
         # 3. Find Contours
-        contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         
         total_area = img.shape[0] * img.shape[1]
         valid_boxes = []
         
-        # 4 & 5. Loop and Filter Noise (> 3% area and < 95% area)
+        # 4 & 5. Loop and Filter Noise (> 1.5% area and < 90% area)
         for c in contours:
             x, y, w, h = cv2.boundingRect(c)
             area = w * h
-            if (0.03 * total_area) < area < (0.95 * total_area):
-                # 6. Convert to [x1, y1, x2, y2]
-                valid_boxes.append([x, y, x + w, y + h])
+            if (0.015 * total_area) < area < (0.90 * total_area):
+                # Filter duplicates (inner and outer contours of the same dilated border)
+                is_dup = False
+                for bx, by, bx2, by2 in valid_boxes:
+                    if abs(x - bx) < 20 and abs(y - by) < 20:
+                        is_dup = True
+                        break
+                if not is_dup:
+                    # 6. Convert to [x1, y1, x2, y2]
+                    valid_boxes.append([x, y, x + w, y + h])
                 
         # 7. Reading Flow Sorting Logic
         # Group by rows based on y-coordinate proximity (e.g. within 50 pixels)
