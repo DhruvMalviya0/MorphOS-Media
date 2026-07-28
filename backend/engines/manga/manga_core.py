@@ -3,7 +3,10 @@ import time
 import base64
 import cv2
 import numpy as np
+import urllib.request
 from ultralytics import YOLO
+from transformers import pipeline
+import torch
 
 class MorphMangaEngine:
     def __init__(self):
@@ -25,6 +28,18 @@ class MorphMangaEngine:
             print(f"[Manga Engine] WARNING: Failed to load custom weights. Error: {e}")
             print("[Manga Engine] Falling back to base COCO model (yolov8n.pt)...")
             self.yolo = YOLO('yolov8n.pt')
+
+        print("[Manga Engine] Initializing Depth Estimation Model...")
+        try:
+            # Using a fast, lightweight depth model suitable for local inference
+            self.depth_estimator = pipeline(task="depth-estimation", model="Intel/dpt-large")
+            print("[Manga Engine] Depth model loaded successfully.")
+        except Exception as e:
+            print(f"[Manga Engine] ERROR loading depth model: {e}")
+            self.depth_estimator = None
+
+        print("[Manga Engine] Initializing Segment Anything (SAM)... (Pending Weight Download)")
+        self.sam_predictor = None # We will load the actual SAM weights in the next step.
 
     def extract_panels(self, base64_image: str, reading_direction: str = "rtl"):
         """Extract panels using OpenCV contour detection as fallback"""
@@ -149,30 +164,94 @@ class MorphMangaEngine:
         time.sleep(0.5)
         return "final_motion_comic_simulated.mp4"
 
-    def generate_motion_comic(self, image_base64: str, reading_flow: str = "rtl"):
+    def generate_motion_comic(self, panels_config: list):
         """
-        Orchestrates the entire Manga Motion AI Pipeline.
+        Phase 3, Step 2: The Parallax Engine.
+        Accepts a list of configured panels (with specific depth and sfx settings)
+        and simulates the rendering process.
         """
-        print(f"\n--- Starting Manga Motion Pipeline (Flow: {reading_flow}) ---")
+        print("\n--- Starting Dynamic Slideshow Render ---")
+        print(f"[Manga Engine] Received {len(panels_config)} panels for rendering.")
         
-        # 1. Panel Extraction
-        panels = self.extract_panels(image_base64, reading_flow)
+        # Ensure directory exists
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        output_dir = os.path.join(base_dir, "ui-shell", "public", "generated_outputs")
+        os.makedirs(output_dir, exist_ok=True)
+        filepath = os.path.join(output_dir, "final_motion_comic.mp4")
         
-        # 2. Depth & Parallax Masking
-        frames = self._dummy_sam_depth_parallax(panels)
+        print("[Manga Engine] Analyzing panels and stitching into video slideshow...")
+        width, height = 1280, 720  # Increased resolution for better readability
+        fps = 30.0
         
-        # 3. Audio Generation
-        audio = self._dummy_audio_generation()
+        # Use imageio to write browser-compatible H.264 mp4
+        import imageio
+        writer = imageio.get_writer(filepath, fps=fps, codec='libx264', macro_block_size=None)
         
-        # 4. Final Video Compilation
-        final_video = self._dummy_compile_video(frames, audio)
-        
-        print("--- Pipeline Complete ---\n")
+        for panel in panels_config:
+            panel_id = panel.get("id")
+            b64_str = panel.get("image", "")
+            if b64_str.startswith("data:image"):
+                b64_str = b64_str.split(",")[1]
+            
+            try:
+                img_data = base64.b64decode(b64_str)
+                np_arr = np.frombuffer(img_data, np.uint8)
+                img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                
+                if img is not None:
+                    h, w = img.shape[:2]
+                    scale = min(width/w, height/h)
+                    nw, nh = int(w * scale), int(h * scale)
+                    resized = cv2.resize(img, (nw, nh))
+                    
+                    canvas = np.zeros((height, width, 3), dtype=np.uint8)
+                    x_offset = (width - nw) // 2
+                    y_offset = (height - nh) // 2
+                    canvas[y_offset:y_offset+nh, x_offset:x_offset+nw] = resized
+                    
+                    # Convert BGR to RGB for imageio
+                    canvas_rgb = cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
+                    
+                    # Calculate duration dynamically based on scene complexity using AI
+                    base_duration = 2.0
+                    extra_duration = 0.0
+                    text_count = 0
+                    
+                    try:
+                        # Run YOLO AI to analyze the scene
+                        results = self.yolo(img)
+                        boxes = results[0].boxes
+                        
+                        for i in range(len(boxes)):
+                            class_id = int(boxes.cls[i].item())
+                            class_name = self.yolo.names[class_id].lower()
+                            # If the model detects text, add more reading time
+                            if 'text' in class_name:
+                                text_count += 1
+                                extra_duration += 1.5  # 1.5s per text bubble
+                            # Optionally add minor time for characters/faces
+                            elif 'face' in class_name or 'body' in class_name or 'person' in class_name:
+                                extra_duration += 0.5
+                    except Exception as yolo_err:
+                        print(f"[Manga Engine] Warning: YOLO analysis failed for panel {panel_id}: {yolo_err}")
+                    
+                    # Cap maximum duration so it doesn't drag too long
+                    total_duration = min(base_duration + extra_duration, 10.0)
+                    print(f" -> Panel {panel_id} | Detected {text_count} text regions | Duration: {total_duration:.1f}s")
+                    
+                    frames_to_write = int(fps * total_duration)
+                    for _ in range(frames_to_write):
+                        writer.append_data(canvas_rgb)
+            except Exception as e:
+                print(f"[Manga Engine] Warning: Failed to process panel {panel_id}: {e}")
+                
+        writer.close()
+            
+        print("--- Render Complete ---\n")
         
         return {
-            "panels_extracted": len(panels),
-            "video_url": f"http://127.0.0.1:8000/static/outputs/{final_video}",
-            "panels": panels
+            "status": "SUCCESS",
+            "video_url": "http://127.0.0.1:8000/static/outputs/final_motion_comic.mp4",
         }
 
     # Keep old method for backward compatibility if needed

@@ -16,6 +16,8 @@ from engines.manga.manga_core import MorphMangaEngine
 
 app = FastAPI(title="MorphOS Media Studio Universal Core API")
 
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,6 +29,9 @@ base_dir = os.path.dirname(os.path.dirname(__file__))
 public_output_dir = os.path.join(base_dir, "ui-shell", "public", "generated_outputs")
 os.makedirs(public_output_dir, exist_ok=True)
 app.mount("/static/outputs", StaticFiles(directory=public_output_dir), name="static_outputs")
+
+os.makedirs("static/outputs", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 gatekeeper = HardwareGatekeeper()
 clearance = gatekeeper.verify_clearance()
@@ -215,11 +220,23 @@ class MangaProcessRequest(BaseModel):
 @app.post("/api/manga/process")
 def process_manga_page(payload: MangaProcessRequest):
     try:
-        # Use generate_motion_comic which calls extract_panels internally
-        result = manga_engine.generate_motion_comic(payload.image_data, payload.reading_flow)
-        return {"status": "SUCCESS", **result}
+        # Phase 3: Only extract panels during the 'process' stage
+        panels = manga_engine.extract_panels(payload.image_data, payload.reading_flow)
+        return {"status": "SUCCESS", "panels": panels}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Manga pipeline failure: {str(e)}")
+
+class MangaRenderRequest(BaseModel):
+    panels: list
+
+@app.post("/api/manga/render")
+def render_manga_comic(payload: MangaRenderRequest):
+    try:
+        # Phase 3: Pass configured panels to generate_motion_comic
+        result = manga_engine.generate_motion_comic(payload.panels)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Manga render failure: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
