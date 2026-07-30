@@ -4,6 +4,7 @@ import DashboardScreen from "./screens/DashboardScreen";
 import StudioWorkspace from "./screens/StudioWorkspace";
 import MangaWorkspace from "./screens/MangaWorkspace";
 import { Image, Music, Film } from "lucide-react";
+import { ServerManagerProvider } from "./contexts/ServerManagerContext";
 
 type Workspace = "visual-studio" | "audio-daw" | "manga-motion" | null;
 
@@ -23,7 +24,7 @@ const INITIAL_PROJECTS: RecentProject[] = [
   { name: "Ambient Forest Loop", type: "audio", timestamp: "Last week", icon: Music, accentColor: "#a855f7" },
 ];
 
-export default function App() {
+function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>(null);
@@ -84,4 +85,12 @@ export default function App() {
   }
 
   return null;
+}
+
+export default function App() {
+  return (
+    <ServerManagerProvider>
+      <AppContent />
+    </ServerManagerProvider>
+  );
 }

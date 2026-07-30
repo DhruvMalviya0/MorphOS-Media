@@ -3,7 +3,9 @@ import os
 # os.environ["HF_HUB_OFFLINE"] = "1"            # ONE-TIME DOWNLOAD MODE: uncomment to restore offline lock after model is cached
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+import sys
+import time
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
