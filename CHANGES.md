@@ -15,3 +15,11 @@
 **Placeholder inputs used:** Only the smart mask generation logic (currently Canny edge-based mask) is acting as a rapid placeholder for SAM object detection, but it is a real CV output.
 
 **How to try it:** Upload an image in Manga Motion Engine -> Initialize Panels -> Select a panel -> Click "Send to Photo Engine". You will instantly land in Photo Engine with the mask pre-loaded.
+
+## 2026-09-03 — Generation Recipes
+
+**What changed:** Implemented a new `Recipe` standard that tracks the state of generation parameters per engine (photo vs audio). Built `POST /api/recipes` and `GET /api/recipes` to persist recipes into a local `recipes.json` file. The StudioWorkspace UI now includes "Save Recipe" buttons that serialize your prompt, sampling passes, etc., and a "Load Recipe" dropdown that instantly hot-swaps all configuration state to match the saved recipe.
+
+**Placeholder inputs used:** None. The JSON file tracks all actual values set in the React UI state.
+
+**How to try it:** In Photo Engine or Audio Engine, adjust some settings (prompt, steps, etc.). Click "Save Recipe", give it a name, and hit Save. The recipe will immediately appear under "Load Recipe". Click it to instantly apply those settings back to the canvas.
