@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MousePointer2, Brush, Eraser, Square, Circle, Type, SquareDashed, Pipette, Plus, Copy, Trash2, Eye, EyeOff, Lock, Unlock, Undo, Redo, Upload, Download } from 'lucide-react';
+import { MousePointer2, Brush, Eraser, Square, Circle, Type, SquareDashed, Pipette, Plus, Copy, Trash2, Eye, EyeOff, Lock, Unlock, Undo, Redo, Upload, Download, ImagePlus } from 'lucide-react';
 import { Layer, LayerKind, ToolType, Transform, TextLayerData, ShapeLayerData } from '../lib/editorTypes';
 
 interface LayerEditorProps {
@@ -394,6 +394,41 @@ export default function LayerEditor({
     saveHistory(n);
   };
 
+  const handleAddImageLayer = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const src = event.target?.result as string;
+      const img = new Image();
+      await new Promise(r => { img.onload = r; img.src = src; });
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.drawImage(img, 0, 0, width, height); // Scale image to canvas size
+      
+      const newLayer: Layer = { 
+        id: generateId(), 
+        name: file.name, 
+        kind: 'raster', 
+        visible: true, 
+        opacity: 1.0, 
+        blendMode: 'source-over', 
+        locked: false, 
+        canvas, 
+        transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 } 
+      };
+      
+      const n = [...layers, newLayer];
+      setLayers(n);
+      setActiveLayerId(newLayer.id);
+      saveHistory(n);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   const deleteLayer = (id: string) => {
     if (layers.length <= 1) return;
     const n = layers.filter(l => l.id !== id);
@@ -534,7 +569,11 @@ export default function LayerEditor({
         <div className="w-64 bg-[#1a1a1a] border-l border-morph-border flex flex-col">
           <div className="p-3 border-b border-morph-border flex justify-between items-center">
             <h3 className="text-xs font-semibold text-gray-300 uppercase">Layers</h3>
-            <button onClick={addLayer} className="p-1 hover:bg-[#333] rounded text-gray-400 hover:text-white"><Plus size={16}/></button>
+            <div className="flex gap-1">
+              <input type="file" id="image-layer-upload" accept="image/*" hidden onChange={handleAddImageLayer} />
+              <label htmlFor="image-layer-upload" className="p-1 hover:bg-[#333] rounded text-gray-400 hover:text-white cursor-pointer" title="Add Image Layer"><ImagePlus size={16}/></label>
+              <button onClick={addLayer} className="p-1 hover:bg-[#333] rounded text-gray-400 hover:text-white" title="Add Blank Layer"><Plus size={16}/></button>
+            </div>
           </div>
           
           <div className="flex-1 overflow-y-auto p-2 flex flex-col-reverse gap-1">
