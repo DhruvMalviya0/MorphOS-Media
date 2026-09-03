@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MousePointer2, Brush, Eraser, Square, Circle, Type, SquareDashed, Pipette, Plus, Copy, Trash2, Eye, EyeOff, Lock, Unlock, Undo, Redo } from 'lucide-react';
+import { MousePointer2, Brush, Eraser, Square, Circle, Type, SquareDashed, Pipette, Plus, Copy, Trash2, Eye, EyeOff, Lock, Unlock, Undo, Redo, Upload, Download } from 'lucide-react';
 import { Layer, LayerKind, ToolType, Transform, TextLayerData, ShapeLayerData } from '../lib/editorTypes';
 
 interface LayerEditorProps {
