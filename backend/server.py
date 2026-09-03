@@ -3,7 +3,9 @@ import os
 # os.environ["HF_HUB_OFFLINE"] = "1"            # ONE-TIME DOWNLOAD MODE: uncomment to restore offline lock after model is cached
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+import sys
+import time
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -12,8 +14,11 @@ from typing import Optional, List
 from gatekeeper import HardwareGatekeeper
 from engines.photo.photo_core import MorphPhotoEngine
 from engines.audio.audio_core import MorphAudioEngine
+from engines.manga.manga_core import MorphMangaEngine
 
 app = FastAPI(title="MorphOS Media Studio Universal Core API")
+
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,10 +32,14 @@ public_output_dir = os.path.join(base_dir, "ui-shell", "public", "generated_outp
 os.makedirs(public_output_dir, exist_ok=True)
 app.mount("/static/outputs", StaticFiles(directory=public_output_dir), name="static_outputs")
 
+os.makedirs("static/outputs", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 gatekeeper = HardwareGatekeeper()
 clearance = gatekeeper.verify_clearance()
 photo_engine = MorphPhotoEngine(clearance["profile"])
 audio_engine = MorphAudioEngine(gatekeeper.providers)
+manga_engine = MorphMangaEngine()
 
 class ModelSelectRequest(BaseModel):
     model_id: str
@@ -205,6 +214,31 @@ def generate_audio_track(payload: AudioGenerateRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Audio production failure: {str(e)}")
+
+class MangaProcessRequest(BaseModel):
+    image_data: str
+    reading_flow: Optional[str] = "rtl"
+
+@app.post("/api/manga/process")
+def process_manga_page(payload: MangaProcessRequest):
+    try:
+        # Phase 3: Only extract panels during the 'process' stage
+        panels = manga_engine.extract_panels(payload.image_data, payload.reading_flow)
+        return {"status": "SUCCESS", "panels": panels}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Manga pipeline failure: {str(e)}")
+
+class MangaRenderRequest(BaseModel):
+    panels: list
+
+@app.post("/api/manga/render")
+def render_manga_comic(payload: MangaRenderRequest):
+    try:
+        # Phase 3: Pass configured panels to generate_motion_comic
+        result = manga_engine.generate_motion_comic(payload.panels)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Manga render failure: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

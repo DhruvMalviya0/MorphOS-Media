@@ -12,4 +12,5 @@ __pycache__/
 backend/logs/*.log
 backend/models_cache/
 backend/ui-shell/
-ui-shell/public/generated_outputs/
+ui-shell/public/generated_outputs/
+*.pt

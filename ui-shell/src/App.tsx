@@ -2,13 +2,37 @@ import { useState } from "react";
 import LoginScreen from "./screens/LoginScreen";
 import DashboardScreen from "./screens/DashboardScreen";
 import StudioWorkspace from "./screens/StudioWorkspace";
+import MangaWorkspace from "./screens/MangaWorkspace";
+import { Image, Music, Film } from "lucide-react";
+import { ServerManagerProvider } from "./contexts/ServerManagerContext";
 
 type Workspace = "visual-studio" | "audio-daw" | "manga-motion" | null;
 
-export default function App() {
+export interface RecentProject {
+  name: string;
+  type: string;
+  timestamp: string;
+  icon: any;
+  accentColor: string;
+}
+
+const INITIAL_PROJECTS: RecentProject[] = [
+  { name: "Gintoki Tabby Cat Edit", type: "image", timestamp: "2 hours ago", icon: Image, accentColor: "#4f8fff" },
+  { name: "Lofi Glass & Rain", type: "audio", timestamp: "Yesterday", icon: Music, accentColor: "#a855f7" },
+  { name: "Chapter 1: The Awakening", type: "animation", timestamp: "3 days ago", icon: Film, accentColor: "#00e5c3" },
+  { name: "Sunset Gradient Pack", type: "image", timestamp: "Last week", icon: Image, accentColor: "#4f8fff" },
+  { name: "Ambient Forest Loop", type: "audio", timestamp: "Last week", icon: Music, accentColor: "#a855f7" },
+];
+
+function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>(null);
+  const [recentProjects, setRecentProjects] = useState<RecentProject[]>(INITIAL_PROJECTS);
+
+  const addRecentProject = (name: string, type: string, icon: any, accentColor: string) => {
+    setRecentProjects(prev => [{ name, type, timestamp: "Just now", icon, accentColor }, ...prev]);
+  };
 
   // ── Auth Handlers ────────────────────────────────────────────────────────
   const handleLogin = (name: string) => {
@@ -40,6 +64,7 @@ export default function App() {
     return (
       <DashboardScreen
         username={username}
+        recentProjects={recentProjects}
         onSelectWorkspace={handleSelectWorkspace}
         onLogout={handleLogout}
       />
@@ -54,34 +79,18 @@ export default function App() {
     return <StudioWorkspace defaultTab="audio" onBack={handleBackToDashboard} />;
   }
 
-  // Manga Motion — placeholder for now
+  // Manga Motion
   if (currentWorkspace === "manga-motion") {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-morph-bg font-sans">
-        <div className="text-center animate-morph-fade-in">
-          <div
-            className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center border border-morph-border"
-            style={{
-              background: "linear-gradient(135deg, rgba(0,229,195,0.15) 0%, rgba(0,229,195,0.05) 100%)",
-              boxShadow: "0 0 40px rgba(0,229,195,0.1)",
-            }}
-          >
-            <span className="text-4xl">📖</span>
-          </div>
-          <h1 className="text-2xl font-bold text-morph-text mb-2">Manga Motion</h1>
-          <p className="text-morph-text-muted mb-8 max-w-sm mx-auto">
-            Panel animation pipeline is under development. Stay tuned for AI-powered manga-to-motion conversion.
-          </p>
-          <button
-            onClick={handleBackToDashboard}
-            className="px-6 py-2.5 rounded-lg text-sm font-medium text-morph-text border border-morph-border hover:border-morph-border-light hover:bg-morph-card transition-all duration-200 cursor-pointer"
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
-      </div>
-    );
+    return <MangaWorkspace onBack={handleBackToDashboard} addRecentProject={addRecentProject} />;
   }
 
   return null;
+}
+
+export default function App() {
+  return (
+    <ServerManagerProvider>
+      <AppContent />
+    </ServerManagerProvider>
+  );
 }

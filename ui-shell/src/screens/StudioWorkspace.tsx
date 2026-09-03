@@ -436,67 +436,69 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
   };
 
   return (
-    <div className="studio-root-container">
-      {/* Upper Global Navigation Console */}
-      <header className="studio-top-bar">
-        <div className="brand-lockup">
+    <div className="flex flex-col h-screen bg-morph-bg text-white font-sans overflow-hidden">
+      {/* Top Header */}
+      <header className="flex items-center justify-between px-6 h-16 border-b border-morph-border bg-[#121212] flex-shrink-0">
+        <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="btn-clear"
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: '12px', padding: '6px 12px', fontSize: '13px' }}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white bg-[#1a1a1a] hover:bg-[#252525] rounded-md transition-colors"
           >
-            <ArrowLeft style={{ width: '14px', height: '14px' }} />
+            <ArrowLeft className="w-4 h-4" />
             Dashboard
           </button>
-          <h2>MorphOS Media Studio</h2>
-          <span className="version-tag">v2.1.0-DAW-Intelli</span>
+          <h1 className="text-xl font-semibold tracking-wide">
+            MorphOS Media Studio - {activeTab === "photo" ? "Visual Engine" : "Audio Engine"}
+          </h1>
+          <span className="px-2 py-0.5 text-xs rounded bg-[#2a2a2a] text-gray-400 border border-[#333]">
+            v2.1.0-DAW-Intelli
+          </span>
         </div>
-        <div className="hardware-pill">{hardwareProfile}</div>
+        <div className="px-3 py-1 text-xs rounded-full bg-blue-900/30 text-blue-400 border border-blue-900/50">
+          {hardwareProfile}
+        </div>
       </header>
 
-      {/* Main Grid Division Layout */}
-      <div className="studio-workspace-grid">
-
-        {/* Left Hand Column: Creative Assets Workspace */}
-        <main className="creative-canvas-area">
-
-          {/* Universal Drop Zone Wrapper */}
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        {/* Main Canvas (Left) */}
+        <div className="flex-1 p-6 flex flex-col overflow-hidden bg-[#0a0a0a]">
           <div
-            className={`dropzone-wrapper ${isDragging ? "dragging-active" : ""}`}
+            className={`flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-lg transition-colors overflow-hidden ${
+              isDragging ? "border-blue-500 bg-blue-900/10" : "border-morph-border hover:border-gray-600 bg-morph-card"
+            }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
             {!activePhoto && !activeAudio ? (
-              <div className="dropzone-prompt">
-                <p>Drag and drop media here or click to browse files</p>
-                <span className="supported-formats">Supports: PNG, JPEG, WEBP, MP3, WAV</span>
+              <div className="text-center">
+                <p className="text-gray-400 mb-2">Drag and drop media here or click to browse files</p>
+                <span className="text-xs text-gray-500 block mb-4">Supports: PNG, JPEG, WEBP, MP3, WAV</span>
                 <input type="file" id="media-picker" onChange={handleFileSelect} hidden accept="image/*,audio/*" />
-                <label htmlFor="media-picker" className="btn-primary">Browse Files</label>
+                <label htmlFor="media-picker" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded cursor-pointer transition-colors text-sm font-medium">
+                  Browse Files
+                </label>
               </div>
             ) : (
-              <div className="active-viewports-container">
+              <div className="w-full h-full flex flex-col">
                 {/* Photo Workspace Viewport Layer */}
                 {activePhoto && (
-                  <div className="canvas-card">
-                    <div className="card-header">
-                      <h4>Visual Canvas Layer ({activePhoto.name})</h4>
-                      <button className="btn-clear" onClick={() => { setActivePhoto(null); setImageBase64(null); clearMask(); setIsMaskMode(false); }}>Remove</button>
+                  <div className="flex-1 flex flex-col h-full overflow-hidden">
+                    <div className="flex justify-between items-center p-3 border-b border-morph-border bg-[#161616] flex-shrink-0">
+                      <h4 className="text-sm font-medium">Visual Canvas Layer ({activePhoto.name})</h4>
+                      <button className="text-xs px-2 py-1 bg-red-900/30 text-red-400 hover:bg-red-900/50 rounded transition-colors" onClick={() => { setActivePhoto(null); setImageBase64(null); clearMask(); setIsMaskMode(false); }}>
+                        Remove
+                      </button>
                     </div>
                     {/* Stacked image + mask canvas overlay */}
-                    <div className="photo-preview-box" style={{ position: 'relative', overflow: 'hidden' }}>
-                      <img src={activePhoto.localUrl} alt="Active Studio Layer" style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <div className="flex-1 relative overflow-hidden bg-black flex items-center justify-center">
+                      <img src={activePhoto.localUrl} alt="Active Studio Layer" className="w-full h-full object-contain pointer-events-none" />
                       <canvas
                         ref={maskCanvasRef}
                         width={512}
                         height={512}
-                        style={{
-                          position: 'absolute', top: 0, left: 0,
-                          width: '100%', height: '100%',
-                          cursor: isMaskMode ? 'crosshair' : 'default',
-                          opacity: 0.65,
-                          pointerEvents: isMaskMode ? 'auto' : 'none'
-                        }}
+                        className={`absolute top-0 left-0 w-full h-full opacity-65 ${isMaskMode ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'}`}
                         onMouseDown={startDrawing}
                         onMouseMove={continueDrawing}
                         onMouseUp={stopDrawing}
@@ -504,39 +506,34 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
                       />
                     </div>
                     {/* Mask Toolbar */}
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', padding: '8px', borderTop: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
+                    <div className="flex gap-2 items-center p-3 bg-[#161616] border-t border-morph-border flex-shrink-0 flex-wrap">
                       <button
-                        className={`btn-primary ${isMaskMode ? 'mask-drawing-active' : ''}`}
-                        id="mask-draw-toggle"
+                        className={`px-3 py-1.5 text-xs font-medium rounded transition-colors flex-shrink-0 ${isMaskMode ? 'bg-blue-500 text-white' : 'bg-[#2a2a2a] text-gray-300 hover:bg-[#333]'}`}
                         onClick={() => setIsMaskMode(prev => !prev)}
-                        style={{ padding: '5px 12px', fontSize: '12px', flex: '0 0 auto' }}
                       >
                         {isMaskMode ? '🖊️ Drawing...' : '✏️ Draw Mask'}
                       </button>
                       <button
-                        id="mask-clear-btn"
-                        className="btn-clear"
+                        className="px-3 py-1.5 text-xs font-medium bg-[#2a2a2a] text-gray-300 hover:bg-[#333] rounded transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={clearMask}
                         disabled={!hasMask}
-                        style={{ padding: '5px 12px', fontSize: '12px', flex: '0 0 auto' }}
                       >
                         🗑️ Clear
                       </button>
                       {hasMask && (
-                        <span style={{ fontSize: '11px', color: '#00ffcc', textShadow: '0 0 6px rgba(0,255,204,0.4)' }}>● Mask active</span>
+                        <span className="text-[11px] text-teal-400 drop-shadow-[0_0_6px_rgba(45,212,191,0.4)]">● Mask active</span>
                       )}
+                      <span className="text-[11px] text-gray-400 ml-auto hidden sm:inline-block">
+                        Paint a mask over the specific target area to regenerate. Unpainted pixels will remain strictly locked.
+                      </span>
                     </div>
-                    <span className="mask-instruction-text">
-                      Paint a mask over the specific target area to regenerate. Unpainted pixels will remain strictly locked and preserved.
-                    </span>
                     {isMaskMode && (
-                      <div style={{ padding: '8px', borderTop: '1px solid var(--border-color)' }}>
-                        <div className="slider-header">
-                          <label style={{ fontSize: '11px' }}>Brush Size</label>
-                          <span className="slider-value" style={{ fontSize: '11px' }}>{brushSize}px</span>
+                      <div className="p-3 bg-[#161616] border-t border-morph-border flex-shrink-0">
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="text-[11px] text-gray-300">Brush Size</label>
+                          <span className="text-[11px] text-blue-400">{brushSize}px</span>
                         </div>
-                        <input id="brush-size-slider" type="range" min="5" max="80" value={brushSize} onChange={(e) => setBrushSize(parseInt(e.target.value))} />
-                        <span className="slider-tip">Paint black over the region to regenerate · Leave Gintoki's face unpainted to preserve it</span>
+                        <input type="range" className="w-full accent-blue-500" min="5" max="80" value={brushSize} onChange={(e) => setBrushSize(parseInt(e.target.value))} />
                       </div>
                     )}
                   </div>
@@ -544,55 +541,42 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
 
                 {/* Audio Workspace Timeline Layer */}
                 {activeAudio && (
-                  <div className="canvas-card">
-                    <div className="card-header">
-                      <h4>Audio Track Timeline ({activeAudio.name})</h4>
-                      <button className="btn-clear" onClick={() => { setActiveAudio(null); setAudioBase64(null); setAudioAnalysis(null); }}>Remove</button>
+                  <div className="flex-1 flex flex-col h-full overflow-hidden">
+                    <div className="flex justify-between items-center p-3 border-b border-morph-border bg-[#161616] flex-shrink-0">
+                      <h4 className="text-sm font-medium">Audio Track Timeline ({activeAudio.name})</h4>
+                      <button className="text-xs px-2 py-1 bg-red-900/30 text-red-400 hover:bg-red-900/50 rounded transition-colors" onClick={() => { setActiveAudio(null); setAudioBase64(null); setAudioAnalysis(null); }}>
+                        Remove
+                      </button>
                     </div>
-                    <div className="audio-preview-box">
-                      <div className="waveform-mock">
-                        <div className="wave-bar" style={{ height: '40%' }}></div>
-                        <div className="wave-bar" style={{ height: '75%' }}></div>
-                        <div className="wave-bar" style={{ height: '90%' }}></div>
-                        <div className="wave-bar" style={{ height: '30%' }}></div>
-                        <div className="wave-bar" style={{ height: '60%' }}></div>
-                        <div className="wave-bar" style={{ height: '85%' }}></div>
-                        <div className="wave-bar" style={{ height: '45%' }}></div>
+                    <div className="flex-1 flex flex-col items-center justify-center bg-[#0f0f0f] p-6 relative">
+                      <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none gap-1">
+                        <div className="w-2 bg-blue-500 h-1/3 rounded-full animate-pulse"></div>
+                        <div className="w-2 bg-blue-500 h-2/3 rounded-full animate-pulse delay-75"></div>
+                        <div className="w-2 bg-blue-500 h-1/2 rounded-full animate-pulse delay-150"></div>
+                        <div className="w-2 bg-blue-500 h-5/6 rounded-full animate-pulse delay-200"></div>
+                        <div className="w-2 bg-blue-500 h-2/3 rounded-full animate-pulse delay-300"></div>
+                        <div className="w-2 bg-blue-500 h-1/3 rounded-full animate-pulse delay-500"></div>
                       </div>
-                      <audio controls src={activeAudio.localUrl} className="universal-audio-player" key={activeAudio.localUrl} />
+                      <audio controls src={activeAudio.localUrl} className="w-full max-w-2xl z-10 filter invert hue-rotate-180 opacity-90" key={activeAudio.localUrl} />
                     </div>
                   </div>
                 )}
               </div>
             )}
           </div>
-        </main>
+        </div>
 
-        {/* Right Hand Column: AI Latent Control Room Panel */}
-        <aside className="ai-control-panel">
-          <div className="studio-tabs">
-            <button 
-              className={`tab-btn ${activeTab === "photo" ? "active" : ""}`}
-              onClick={() => setActiveTab("photo")}
-            >
-              Visual Studio
-            </button>
-            <button 
-              className={`tab-btn ${activeTab === "audio" ? "active" : ""}`}
-              onClick={() => setActiveTab("audio")}
-            >
-              Audio DAW
-            </button>
-          </div>
-          <hr className="divider" />
-
+        {/* Control Panel (Right) */}
+        <div className="w-full md:w-80 border-l border-morph-border bg-[#161616] flex-shrink-0 flex flex-col overflow-y-auto">
           {/* TAB 1: PHOTO GENERATION CONTROLS */}
           {activeTab === "photo" && (
-            <div className="tab-content">
-              <h3>Visual Canvas Controls</h3>
-              <div className="control-group">
-                <label>Neural Text Prompt Intent</label>
+            <div className="p-5 flex flex-col gap-6">
+              <h3 className="text-sm font-semibold text-gray-200 uppercase tracking-wider mb-2">Visual Canvas Controls</h3>
+              
+              <div className="flex flex-col gap-2">
+                <label className="text-xs text-gray-400 font-medium">Neural Text Prompt Intent</label>
                 <textarea
+                  className="w-full h-24 bg-[#0a0a0a] border border-morph-border rounded-md p-3 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-blue-500 resize-none transition-colors"
                   placeholder="Describe the image modification or latent generation details..."
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
@@ -600,30 +584,31 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
                 />
               </div>
 
-              <div className="control-group">
-                <div className="slider-header">
-                  <label>Sampling Interference Passes</label>
-                  <span className="slider-value">{samplingSteps}</span>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs text-gray-400 font-medium">Sampling Interference Passes</label>
+                  <span className="text-xs text-blue-400">{samplingSteps}</span>
                 </div>
                 <input
                   type="range"
+                  className="w-full accent-blue-500"
                   min="1"
                   max="50"
                   value={samplingSteps}
                   onChange={(e) => setSamplingSteps(parseInt(e.target.value))}
                   disabled={isGenerating}
                 />
-                <span className="slider-tip">Note: Laptop 4060 runs optimal Turbo passes at depth 4.</span>
+                <span className="text-[10px] text-gray-500">Note: Laptop 4060 runs optimal Turbo passes at depth 4.</span>
               </div>
 
-              <div className="control-group">
-                <div className="slider-header">
-                  <label>Inpaint Denoise Strength</label>
-                  <span className="slider-value">{inpaintStrength.toFixed(1)}</span>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs text-gray-400 font-medium">Inpaint Denoise Strength</label>
+                  <span className="text-xs text-blue-400">{inpaintStrength.toFixed(1)}</span>
                 </div>
                 <input
-                  id="inpaint-strength-slider"
                   type="range"
+                  className="w-full accent-blue-500"
                   min="0.1"
                   max="1.0"
                   step="0.05"
@@ -631,11 +616,15 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
                   onChange={(e) => setInpaintStrength(parseFloat(e.target.value))}
                   disabled={isGenerating}
                 />
-                <span className="slider-tip">1.0 = full regeneration inside mask · 0.5 = blend with original</span>
+                <span className="text-[10px] text-gray-500">1.0 = full regeneration inside mask · 0.5 = blend with original</span>
               </div>
 
               <button
-                className={`btn-generate ${isGenerating ? "generating" : ""}`}
+                className={`w-full py-2.5 rounded-md font-medium text-sm transition-all duration-300 ${
+                  isGenerating 
+                    ? "bg-blue-600/50 text-white cursor-wait relative overflow-hidden" 
+                    : "bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]"
+                }`}
                 onClick={triggerAiGeneration}
                 disabled={isGenerating}
               >
@@ -646,29 +635,82 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
 
           {/* TAB 2: AUDIO DAW CONTROLS */}
           {activeTab === "audio" && (
-            <div className="tab-content scrollable-tab-content">
-              <h3>DAW Intelligence Pipeline</h3>
+            <div className="p-5 flex flex-col gap-6">
+              <h3 className="text-sm font-semibold text-gray-200 uppercase tracking-wider mb-2">DAW Intelligence Pipeline</h3>
 
-              {/* SECTION A: Generative Audio from Prompt */}
-              <div className="daw-section">
-                <h4>Generative Soundscape Synthesis</h4>
-                <div className="control-group">
-                  <label>Acoustic Scene Prompt</label>
+              {/* DSP Analytics Display */}
+              {isAnalyzing ? (
+                <div className="flex flex-col gap-2 p-3 bg-blue-900/10 border border-blue-900/30 rounded-md animate-pulse">
+                  <h4 className="text-xs font-semibold text-blue-400">Extracting DSP Analytics...</h4>
+                </div>
+              ) : audioAnalysis && (
+                <div className="flex flex-col gap-2 p-3 bg-blue-900/10 border border-blue-900/30 rounded-md">
+                  <h4 className="text-xs font-semibold text-blue-400">DSP Analysis Complete</h4>
+                  <div className="grid grid-cols-2 gap-2 text-[10px] text-gray-400">
+                    <div><span className="text-gray-500">BPM:</span> {audioAnalysis.estimated_bpm}</div>
+                    <div><span className="text-gray-500">Duration:</span> {audioAnalysis.duration_seconds}s</div>
+                    <div><span className="text-gray-500">Beats:</span> {audioAnalysis.total_beats_detected}</div>
+                    <div><span className="text-gray-500">Offset:</span> {audioAnalysis.first_beat_offset_seconds}s</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tempo Modifier */}
+              <div className="flex flex-col gap-4">
+                <h4 className="text-xs font-semibold text-blue-400 uppercase">Tempo Modulation</h4>
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs text-gray-400 font-medium">Speed Factor</label>
+                    <span className="text-xs text-blue-400">{speedFactor}x</span>
+                  </div>
+                  <input
+                    type="range"
+                    className="w-full accent-blue-500"
+                    min="0.5"
+                    max="2.0"
+                    step="0.1"
+                    value={speedFactor}
+                    onChange={(e) => setSpeedFactor(parseFloat(e.target.value))}
+                    disabled={isModifying || !activeAudio}
+                  />
+                </div>
+                <button
+                  className={`w-full py-2.5 rounded-md font-medium text-sm transition-all duration-300 ${
+                    isModifying || !activeAudio
+                      ? "bg-[#2a2a2a] text-gray-500 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]"
+                  }`}
+                  onClick={modifyAudioTempo}
+                  disabled={isModifying || !activeAudio}
+                >
+                  {isModifying ? "Modifying Tempo..." : "Apply Tempo Shift"}
+                </button>
+              </div>
+
+              <hr className="border-morph-border my-2" />
+
+              {/* Generative Audio */}
+              <div className="flex flex-col gap-4">
+                <h4 className="text-xs font-semibold text-blue-400 uppercase">Generative Soundscape Synthesis</h4>
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs text-gray-400 font-medium">Acoustic Scene Prompt</label>
                   <textarea
-                    placeholder="e.g., retro lofi synthwave loop, high energy techno drums, calm ambient rain..."
+                    className="w-full h-20 bg-[#0a0a0a] border border-morph-border rounded-md p-3 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-blue-500 resize-none transition-colors"
+                    placeholder="e.g., retro lofi synthwave loop, high energy techno drums..."
                     value={audioPrompt}
                     onChange={(e) => setAudioPrompt(e.target.value)}
                     disabled={isGeneratingAudio}
                   />
                 </div>
 
-                <div className="control-group">
-                  <div className="slider-header">
-                    <label>Duration (Seconds)</label>
-                    <span className="slider-value">{audioDuration}s</span>
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs text-gray-400 font-medium">Duration</label>
+                    <span className="text-xs text-blue-400">{audioDuration}s</span>
                   </div>
                   <input
                     type="range"
+                    className="w-full accent-blue-500"
                     min="2"
                     max="15"
                     value={audioDuration}
@@ -678,34 +720,30 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
                 </div>
 
                 <button
-                  className={`btn-generate ${isGeneratingAudio ? "generating" : ""}`}
+                  className={`w-full py-2.5 rounded-md font-medium text-sm transition-all duration-300 ${
+                    isGeneratingAudio
+                      ? "bg-purple-600/50 text-white cursor-wait relative overflow-hidden"
+                      : "bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_20px_rgba(147,51,234,0.5)]"
+                  }`}
                   onClick={generateAudioTrack}
                   disabled={isGeneratingAudio}
                 >
-                  {isGeneratingAudio ? "Synthesizing Soundtrack..." : "Synthesize Soundscape"}
+                  {isGeneratingAudio ? "Synthesizing..." : "Synthesize Soundscape"}
                 </button>
               </div>
 
-              <hr className="divider" />
+              <hr className="border-morph-border" />
 
-              {/* SECTION: Sample Bin Vault */}
-              <div className="daw-section">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h4>Sample Bin Vault</h4>
-                  <span className="badge" style={{ 
-                    fontSize: '11px', 
-                    padding: '2px 8px', 
-                    backgroundColor: 'var(--bg-primary)', 
-                    border: '1px solid var(--border-color)', 
-                    borderRadius: '10px',
-                    color: '#00ffcc',
-                    textShadow: '0 0 6px rgba(0, 255, 204, 0.2)'
-                  }}>
+              {/* Sample Bin Vault */}
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-xs font-semibold text-blue-400 uppercase">Sample Bin Vault</h4>
+                  <span className="px-2 py-0.5 text-[10px] bg-teal-900/30 text-teal-400 border border-teal-900/50 rounded-full">
                     {uploadedFXSamples.length} Active
                   </span>
                 </div>
                 
-                <div className="control-group">
+                <div className="flex flex-col gap-2">
                   <input 
                     type="file" 
                     id="daw-fx-upload" 
@@ -729,52 +767,28 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
                     accept="audio/*"
                     hidden
                   />
-                  <label htmlFor="daw-fx-upload" className="btn-primary btn-tempo" style={{ width: '100%', margin: '0' }}>
+                  <label htmlFor="daw-fx-upload" className="w-full py-2 bg-[#2a2a2a] hover:bg-[#333] text-gray-300 rounded cursor-pointer transition-colors text-xs font-medium text-center border border-dashed border-gray-600 hover:border-gray-400">
                     + Load Custom FX Samples
                   </label>
                 </div>
 
                 {uploadedFXSamples.length === 0 ? (
-                  <div className="dsp-placeholder">
+                  <div className="text-[11px] text-gray-500 text-center p-3 border border-morph-border rounded bg-[#0a0a0a]">
                     No custom sound layers loaded. Add loops/effects to combine with sequencer tokens.
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ 
-                      maxHeight: '180px', 
-                      overflowY: 'auto', 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      gap: '6px',
-                      paddingRight: '4px'
-                    }}>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
                       {uploadedFXSamples.map((sample, idx) => (
-                        <div key={idx} className="dsp-stat-card" style={{ 
-                          flexDirection: 'row', 
-                          justifyContent: 'space-between', 
-                          alignItems: 'center',
-                          padding: '8px 12px'
-                        }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden', width: '70%' }}>
-                            <span style={{ 
-                              fontSize: '12px', 
-                              fontWeight: 500,
-                              overflow: 'hidden', 
-                              textOverflow: 'ellipsis', 
-                              whiteSpace: 'nowrap' 
-                            }} title={sample.name}>
+                        <div key={idx} className="flex justify-between items-center p-2 bg-[#0a0a0a] border border-morph-border rounded group hover:border-gray-600 transition-colors">
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className="text-[11px] font-medium text-gray-300 truncate" title={sample.name}>
                               {sample.name}
                             </span>
-                            <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{sample.size || 'N/A'}</span>
+                            <span className="text-[9px] text-gray-500">{sample.size || 'N/A'}</span>
                           </div>
                           <button 
-                            className="btn-clear" 
-                            style={{ 
-                              padding: '2px 8px', 
-                              fontSize: '11px',
-                              borderColor: 'rgba(255, 0, 0, 0.3)',
-                              color: 'rgba(255, 100, 100, 0.8)'
-                            }} 
+                            className="ml-2 px-1.5 py-0.5 text-[10px] text-red-500/70 hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
                             onClick={() => {
                               setUploadedFXSamples(prev => prev.filter((_, i) => i !== idx));
                               setStudioLogs(prev => prev + `\n[VAULT] Purged sample: ${sample.name}`);
@@ -786,8 +800,7 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
                       ))}
                     </div>
                     <button 
-                      className="btn-clear" 
-                      style={{ width: '100%', fontSize: '12px', padding: '8px', color: 'var(--text-muted)' }}
+                      className="w-full py-1.5 text-[11px] text-gray-500 hover:text-red-400 transition-colors"
                       onClick={() => {
                         setUploadedFXSamples([]);
                         if (fileInputRef.current) {
@@ -801,96 +814,21 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
                   </div>
                 )}
               </div>
-
-              <hr className="divider" />
-
-              {/* SECTION B: DSP Analysis Report Dashboard */}
-              <div className="daw-section">
-                <h4>DSP Analysis Report</h4>
-                {isAnalyzing ? (
-                  <div className="dsp-loading-box">
-                    <span className="dsp-spinner"></span> Running Deep FFT Beat Extraction...
-                  </div>
-                ) : audioAnalysis ? (
-                  <div className="dsp-dashboard">
-                    <div className="dsp-stats-grid">
-                      <div className="dsp-stat-card">
-                        <span className="stat-label">Estimated BPM</span>
-                        <span className="stat-value bpm-badge">{audioAnalysis.estimated_bpm}</span>
-                      </div>
-                      <div className="dsp-stat-card">
-                        <span className="stat-label">Duration</span>
-                        <span className="stat-value">{audioAnalysis.duration_seconds}s</span>
-                      </div>
-                      <div className="dsp-stat-card">
-                        <span className="stat-label">Total Beats</span>
-                        <span className="stat-value">{audioAnalysis.total_beats_detected}</span>
-                      </div>
-                      <div className="dsp-stat-card">
-                        <span className="stat-label">First Offset</span>
-                        <span className="stat-value">{audioAnalysis.first_beat_offset_seconds}s</span>
-                      </div>
-                    </div>
-                    {audioAnalysis.beat_offsets_sample_array && audioAnalysis.beat_offsets_sample_array.length > 0 && (
-                      <div className="beat-offsets-container">
-                        <span className="stat-label">Beat Timestamps (10 samples)</span>
-                        <div className="beat-pills">
-                          {audioAnalysis.beat_offsets_sample_array.map((offset, idx) => (
-                            <span key={idx} className="beat-pill">{offset}s</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="dsp-placeholder">
-                    No track metadata parsed. Load a track to inspect DSP elements.
-                  </div>
-                )}
-              </div>
-
-              <hr className="divider" />
-
-              {/* SECTION C: Tempo Modifier */}
-              <div className="daw-section">
-                <h4>Speed/Tempo Modifier</h4>
-                <div className="control-group">
-                  <div className="slider-header">
-                    <label>Tempo Factor</label>
-                    <span className="slider-value">{speedFactor.toFixed(1)}x</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="2.0"
-                    step="0.1"
-                    value={speedFactor}
-                    onChange={(e) => setSpeedFactor(parseFloat(e.target.value))}
-                    disabled={isModifying || !audioBase64}
-                  />
-                  <span className="slider-tip">Note: Changing tempo scales pitch proportionally.</span>
-                </div>
-
-                <button
-                  className={`btn-primary btn-tempo ${isModifying ? "generating" : ""}`}
-                  onClick={modifyAudioTempo}
-                  disabled={isModifying || !audioBase64}
-                  style={{ width: '100%', marginTop: '8px' }}
-                >
-                  {isModifying ? "Re-matching sample frame rates..." : "Apply Speed Shift"}
-                </button>
-              </div>
             </div>
           )}
-        </aside>
-
+        </div>
       </div>
 
-      {/* Persistent Bottom Systems Diagnostic Dashboard Terminal */}
-      <footer className="studio-logs-bar">
-        <h5>Core System Communication Pipeline Monitor:</h5>
-        <pre className="logs-terminal-view">{studioLogs}</pre>
-      </footer>
+      {/* Console (Bottom Full Width) */}
+      <div className="h-40 border-t border-morph-border bg-[#050505] flex-shrink-0 flex flex-col p-4">
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+          Core System Communication Pipeline Monitor
+        </h4>
+        <div className="flex-1 overflow-y-auto font-mono text-[11px] text-[#00ffcc] leading-relaxed whitespace-pre-wrap opacity-80 custom-scrollbar">
+          {studioLogs}
+        </div>
+      </div>
     </div>
   );
 }
