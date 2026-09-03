@@ -105,9 +105,18 @@ export default function LayerEditor({
     }
   }, [initialBaseImageBase64, width, height]);
 
+  // Prevent infinite loops from callback props
+  const onCompositeUpdateRef = useRef(onCompositeUpdate);
+  const onExternalLayerConsumedRef = useRef(onExternalLayerConsumed);
+
+  useEffect(() => {
+    onCompositeUpdateRef.current = onCompositeUpdate;
+    onExternalLayerConsumedRef.current = onExternalLayerConsumed;
+  }, [onCompositeUpdate, onExternalLayerConsumed]);
+
   // Inject external AI layer
   useEffect(() => {
-    if (newExternalLayerBase64 && onExternalLayerConsumed) {
+    if (newExternalLayerBase64) {
       const injectLayer = async () => {
         const canvas = document.createElement('canvas');
         canvas.width = width;
@@ -127,15 +136,17 @@ export default function LayerEditor({
         setLayers(n);
         setActiveLayerId(newLayer.id);
         saveHistory(n);
-        onExternalLayerConsumed();
+        if (onExternalLayerConsumedRef.current) {
+          onExternalLayerConsumedRef.current();
+        }
       };
       injectLayer();
     }
-  }, [newExternalLayerBase64, width, height, layers, onExternalLayerConsumed, saveHistory]);
+  }, [newExternalLayerBase64, width, height, layers, saveHistory]);
 
   // Expose Composite and Mask
   const pushUpdateToBackend = useCallback(() => {
-    if (!compositeCanvasRef.current || !onCompositeUpdate) return;
+    if (!compositeCanvasRef.current) return;
     const base64 = compositeCanvasRef.current.toDataURL('image/png');
     
     let maskBase64 = null;
@@ -145,18 +156,18 @@ export default function LayerEditor({
       mCanvas.height = height;
       const mCtx = mCanvas.getContext('2d');
       if (mCtx) {
-        // Black preservation
         mCtx.fillStyle = "black";
         mCtx.fillRect(0, 0, width, height);
-        // White regeneration
         mCtx.fillStyle = "white";
         mCtx.fillRect(selection.x, selection.y, selection.w, selection.h);
         maskBase64 = mCanvas.toDataURL('image/png');
       }
     }
     
-    onCompositeUpdate(base64, maskBase64);
-  }, [selection, width, height, onCompositeUpdate]);
+    if (onCompositeUpdateRef.current) {
+      onCompositeUpdateRef.current(base64, maskBase64);
+    }
+  }, [selection, width, height]);
 
   // Render composite
   const renderComposite = useCallback(() => {
