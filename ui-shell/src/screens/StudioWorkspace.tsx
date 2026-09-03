@@ -56,7 +56,9 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
   const [activeAudio, setActiveAudio] = useState<MediaFile | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [maskBase64, setMaskBase64] = useState<string | null>(null);
   const [audioBase64, setAudioBase64] = useState<string | null>(null);
+  const [newExternalLayer, setNewExternalLayer] = useState<string | null>(null);
 
   // AI Generative Option State Handles
   const [aiPrompt, setAiPrompt] = useState<string>("");
@@ -373,24 +375,16 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
         body: JSON.stringify({
           prompt: aiPrompt,
           steps: samplingSteps,
-          base_image_path: activePhoto ?
-            (activePhoto.localUrl.startsWith("http") ?
-              activePhoto.localUrl :
-              imageBase64) : null,
-          mask_image: maskBase64,
+          base_image_path: imageBase64 || null,
+          mask_image: maskBase64 || null,
           strength: inpaintStrength
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        setStudioLogs(`[OK] ${data.log}\n[API SUCCESS] Rendering new asset canvas.`);
-        setActivePhoto({
-          name: `AI_Generated_${data.prompt_received.replace(/\s+/g, '_')}.png`,
-          size: "Optimized 1024x1024 Canvas",
-          type: "photo",
-          localUrl: data.generated_image_url
-        });
+        setStudioLogs(`[OK] ${data.log}\n[API SUCCESS] Adding new layer to canvas.`);
+        setNewExternalLayer(data.generated_image_url);
       } else {
         setStudioLogs(`[ERROR] Generation failed: ${data.detail}`);
       }
@@ -627,7 +621,9 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
             ) : activeTab === 'photo' && !activePhoto && !chainedAsset ? (
               <div className="w-full h-full flex flex-col">
                 <LayerEditor 
-                  onCompositeUpdate={(base64) => setImageBase64(base64)}
+                  onCompositeUpdate={(b64, mb64) => { setImageBase64(b64); setMaskBase64(mb64); }}
+                  newExternalLayerBase64={newExternalLayer}
+                  onExternalLayerConsumed={() => setNewExternalLayer(null)}
                 />
               </div>
             ) : (
@@ -636,7 +632,9 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
                 {activeTab === 'photo' && (
                   <LayerEditor 
                     initialBaseImageBase64={activePhoto ? (activePhoto.localUrl.startsWith("http") ? activePhoto.localUrl : imageBase64) : null}
-                    onCompositeUpdate={(base64) => setImageBase64(base64)}
+                    onCompositeUpdate={(b64, mb64) => { setImageBase64(b64); setMaskBase64(mb64); }}
+                    newExternalLayerBase64={newExternalLayer}
+                    onExternalLayerConsumed={() => setNewExternalLayer(null)}
                   />
                 )}
 
