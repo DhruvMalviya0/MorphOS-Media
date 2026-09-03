@@ -31,6 +31,13 @@ interface RoutingDecision {
   reasoning: string[];
 }
 
+interface Recipe {
+  id?: string;
+  name: string;
+  engine: string;
+  params: any;
+}
+
 interface StudioWorkspaceProps {
   defaultTab?: "photo" | "audio";
   onBack: () => void;
@@ -75,6 +82,11 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
   const [hasMask, setHasMask] = useState<boolean>(false);
   const [inpaintStrength, setInpaintStrength] = useState<number>(0.85);
 
+  // Recipes State
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [recipeName, setRecipeName] = useState<string>("");
+  const [showRecipeSave, setShowRecipeSave] = useState<boolean>(false);
+
   // Hardware Profiling Probe
   useEffect(() => {
     const checkHardwareStatus = async () => {
@@ -113,6 +125,23 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
       };
       fetchRouting();
     }
+  }, [activeTab]);
+
+  // Fetch Recipes
+  const fetchRecipes = async () => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/recipes?engine=${activeTab}`);
+      if (res.ok) {
+        const data = await res.json();
+        setRecipes(data.recipes);
+      }
+    } catch (e) {
+      console.error("Failed to fetch recipes", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecipes();
   }, [activeTab]);
 
   // Reset mask canvas whenever the source image changes
@@ -503,6 +532,52 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
     }
   };
 
+  const handleSaveRecipe = async () => {
+    if (!recipeName.trim()) return;
+    try {
+      const params = activeTab === "photo" ? {
+        prompt: aiPrompt,
+        steps: samplingSteps,
+        strength: inpaintStrength
+      } : {
+        prompt: audioPrompt,
+        duration: audioDuration,
+        speedFactor: speedFactor
+      };
+
+      const res = await fetch("http://127.0.0.1:8000/api/recipes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: recipeName,
+          engine: activeTab,
+          params: params
+        })
+      });
+      if (res.ok) {
+        setShowRecipeSave(false);
+        setRecipeName("");
+        fetchRecipes();
+        setStudioLogs(`[OK] Saved recipe successfully.`);
+      }
+    } catch (e) {
+      console.error("Failed to save recipe", e);
+    }
+  };
+
+  const handleLoadRecipe = (r: Recipe) => {
+    if (activeTab === "photo") {
+      if (r.params.prompt) setAiPrompt(r.params.prompt);
+      if (r.params.steps) setSamplingSteps(r.params.steps);
+      if (r.params.strength) setInpaintStrength(r.params.strength);
+    } else {
+      if (r.params.prompt) setAudioPrompt(r.params.prompt);
+      if (r.params.duration) setAudioDuration(r.params.duration);
+      if (r.params.speedFactor) setSpeedFactor(r.params.speedFactor);
+    }
+    setStudioLogs(`[OK] Loaded recipe: ${r.name}`);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-morph-bg text-white font-sans overflow-hidden">
       {/* Top Header */}
@@ -707,17 +782,61 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
                 </div>
               )}
 
-              <button
-                className={`w-full py-2.5 rounded-md font-medium text-sm transition-all duration-300 ${
-                  isGenerating 
-                    ? "bg-blue-600/50 text-white cursor-wait relative overflow-hidden" 
-                    : "bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]"
-                }`}
-                onClick={triggerAiGeneration}
-                disabled={isGenerating}
-              >
-                {isGenerating ? "Synthesizing Latent Grid..." : "Generate AI Asset Canvas"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  className={`flex-1 py-2.5 rounded-md font-medium text-sm transition-all duration-300 ${
+                    isGenerating 
+                      ? "bg-blue-600/50 text-white cursor-wait relative overflow-hidden" 
+                      : "bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]"
+                  }`}
+                  onClick={triggerAiGeneration}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? "Synthesizing Latent Grid..." : "Generate AI Asset Canvas"}
+                </button>
+                <button 
+                  className="px-3 bg-[#2a2a2a] hover:bg-[#333] text-gray-300 rounded-md transition-colors text-xs border border-[#444]"
+                  onClick={() => setShowRecipeSave(!showRecipeSave)}
+                >
+                  Save Recipe
+                </button>
+              </div>
+
+              {showRecipeSave && (
+                <div className="flex gap-2 bg-[#1a1a1a] p-2 rounded border border-[#333]">
+                  <input 
+                    type="text" 
+                    placeholder="Recipe name..."
+                    className="flex-1 bg-[#111] border border-morph-border rounded p-1.5 text-xs text-white"
+                    value={recipeName}
+                    onChange={e => setRecipeName(e.target.value)}
+                  />
+                  <button 
+                    className="px-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded transition-colors"
+                    onClick={handleSaveRecipe}
+                  >
+                    Save
+                  </button>
+                </div>
+              )}
+
+              {recipes.length > 0 && (
+                <div className="flex flex-col gap-2 border-t border-morph-border pt-4">
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Load Recipe</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {recipes.map(r => (
+                      <button 
+                        key={r.id}
+                        className="px-3 py-1.5 bg-blue-900/20 hover:bg-blue-900/40 text-blue-300 border border-blue-900/50 rounded text-xs transition-colors"
+                        onClick={() => handleLoadRecipe(r)}
+                        title={JSON.stringify(r.params, null, 2)}
+                      >
+                        {r.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -806,18 +925,62 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
                     disabled={isGeneratingAudio}
                   />
                 </div>
+                
+                <div className="flex gap-2">
+                  <button
+                    className={`flex-1 py-2.5 rounded-md font-medium text-sm transition-all duration-300 ${
+                      isGeneratingAudio
+                        ? "bg-purple-600/50 text-white cursor-wait relative overflow-hidden"
+                        : "bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_20px_rgba(147,51,234,0.5)]"
+                    }`}
+                    onClick={generateAudioTrack}
+                    disabled={isGeneratingAudio}
+                  >
+                    {isGeneratingAudio ? "Synthesizing..." : "Synthesize Soundscape"}
+                  </button>
+                  <button 
+                    className="px-3 bg-[#2a2a2a] hover:bg-[#333] text-gray-300 rounded-md transition-colors text-xs border border-[#444]"
+                    onClick={() => setShowRecipeSave(!showRecipeSave)}
+                  >
+                    Save Recipe
+                  </button>
+                </div>
 
-                <button
-                  className={`w-full py-2.5 rounded-md font-medium text-sm transition-all duration-300 ${
-                    isGeneratingAudio
-                      ? "bg-purple-600/50 text-white cursor-wait relative overflow-hidden"
-                      : "bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_20px_rgba(147,51,234,0.5)]"
-                  }`}
-                  onClick={generateAudioTrack}
-                  disabled={isGeneratingAudio}
-                >
-                  {isGeneratingAudio ? "Synthesizing..." : "Synthesize Soundscape"}
-                </button>
+                {showRecipeSave && (
+                  <div className="flex gap-2 bg-[#1a1a1a] p-2 rounded border border-[#333]">
+                    <input 
+                      type="text" 
+                      placeholder="Recipe name..."
+                      className="flex-1 bg-[#111] border border-morph-border rounded p-1.5 text-xs text-white"
+                      value={recipeName}
+                      onChange={e => setRecipeName(e.target.value)}
+                    />
+                    <button 
+                      className="px-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded transition-colors"
+                      onClick={handleSaveRecipe}
+                    >
+                      Save
+                    </button>
+                  </div>
+                )}
+
+                {recipes.length > 0 && (
+                  <div className="flex flex-col gap-2 border-t border-morph-border pt-4">
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Load Recipe</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {recipes.map(r => (
+                        <button 
+                          key={r.id}
+                          className="px-3 py-1.5 bg-blue-900/20 hover:bg-blue-900/40 text-blue-300 border border-blue-900/50 rounded text-xs transition-colors"
+                          onClick={() => handleLoadRecipe(r)}
+                          title={JSON.stringify(r.params, null, 2)}
+                        >
+                          {r.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <hr className="border-morph-border" />

@@ -324,5 +324,49 @@ def send_panel_to_photo(payload: SendToPhotoRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to chain to photo engine: {str(e)}")
 
+# Feature 3: Generation Recipes
+import json
+
+RECIPES_FILE = os.path.join(os.path.dirname(__file__), "recipes.json")
+
+class Recipe(BaseModel):
+    id: Optional[str] = None
+    name: str
+    engine: str
+    params: dict
+
+@app.post("/api/recipes")
+def save_recipe(recipe: Recipe):
+    recipes = []
+    if os.path.exists(RECIPES_FILE):
+        try:
+            with open(RECIPES_FILE, "r") as f:
+                recipes = json.load(f)
+        except:
+            pass
+    
+    recipe.id = str(uuid.uuid4())
+    recipes.append(recipe.dict())
+    
+    with open(RECIPES_FILE, "w") as f:
+        json.dump(recipes, f, indent=4)
+        
+    return {"status": "SUCCESS", "recipe": recipe.dict()}
+
+@app.get("/api/recipes")
+def get_recipes(engine: Optional[str] = None):
+    recipes = []
+    if os.path.exists(RECIPES_FILE):
+        try:
+            with open(RECIPES_FILE, "r") as f:
+                recipes = json.load(f)
+        except:
+            pass
+            
+    if engine:
+        recipes = [r for r in recipes if r.get("engine") == engine]
+        
+    return {"status": "SUCCESS", "recipes": recipes}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
