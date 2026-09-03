@@ -23,3 +23,11 @@
 **Placeholder inputs used:** None. The JSON file tracks all actual values set in the React UI state.
 
 **How to try it:** In Photo Engine or Audio Engine, adjust some settings (prompt, steps, etc.). Click "Save Recipe", give it a name, and hit Save. The recipe will immediately appear under "Load Recipe". Click it to instantly apply those settings back to the canvas.
+
+## 2026-09-03 — Layer-Based Photo Editor
+
+**What changed:** Photo Engine screen now has a full layer stack (add, reorder, blend mode, opacity, lock, visibility) and a real tool palette with undo/redo, client-side canvas compositing, and a two-way bridge to AI generation (send composite/selection as input, receive results as a new layer). Projects save/load with the full layer stack intact.
+
+**Tools shipped:** Move, Marquee Selection, Brush, Eraser, Shape (Rectangle/Ellipse), Text, Eyedropper.
+**Tools deliberately deferred:** None. All requested tools shipped.
+**How to try it:** Open Photo Engine → layers panel is in the sidebar → draw, move, and edit layers. Send to AI and see it append a new layer with the result!
