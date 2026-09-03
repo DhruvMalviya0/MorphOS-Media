@@ -24,6 +24,13 @@ interface FXSample {
   size?: string;
 }
 
+interface RoutingDecision {
+  resolution: string;
+  precision: string;
+  batch_size: number;
+  reasoning: string[];
+}
+
 interface StudioWorkspaceProps {
   defaultTab?: "photo" | "audio";
   onBack: () => void;
@@ -33,6 +40,7 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
   // Navigation & Viewport State Handles
   const [activeTab, setActiveTab] = useState<"photo" | "audio">(defaultTab);
   const [hardwareProfile, setHardwareProfile] = useState<string>("Detecting System Profile...");
+  const [routingDecision, setRoutingDecision] = useState<RoutingDecision | null>(null);
 
   // Media Upload State Handles
   const [activePhoto, setActivePhoto] = useState<MediaFile | null>(null);
@@ -82,6 +90,28 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
       }
     };
     checkHardwareStatus();
+  }, [activeTab]);
+
+  // Fetch Auto-Routing Decision
+  useEffect(() => {
+    if (activeTab === "photo") {
+      const fetchRouting = async () => {
+        try {
+          const res = await fetch("http://127.0.0.1:8000/api/gatekeeper/route-decision", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ op_type: "photo-gen" })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setRoutingDecision(data);
+          }
+        } catch (e) {
+          console.error("Failed to fetch routing decision", e);
+        }
+      };
+      fetchRouting();
+    }
   }, [activeTab]);
 
   // Reset mask canvas whenever the source image changes
@@ -618,6 +648,26 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
                 />
                 <span className="text-[10px] text-gray-500">1.0 = full regeneration inside mask · 0.5 = blend with original</span>
               </div>
+
+              {/* Auto-Routing Panel */}
+              {routingDecision && (
+                <div className="flex flex-col gap-2 p-3 bg-blue-900/10 border border-blue-900/30 rounded-md">
+                  <h4 className="text-xs font-semibold text-blue-400">⚡ Hardware Auto-Routing</h4>
+                  <div className="grid grid-cols-2 gap-2 text-[10px] text-gray-400">
+                    <div><span className="text-gray-500">Resolution:</span> {routingDecision.resolution}</div>
+                    <div><span className="text-gray-500">Precision:</span> {routingDecision.precision}</div>
+                    <div><span className="text-gray-500">Batch Size:</span> {routingDecision.batch_size}</div>
+                  </div>
+                  <div className="mt-2 text-[10px] text-gray-400">
+                    <span className="text-gray-500 font-medium">Reasoning:</span>
+                    <ul className="list-disc pl-3 mt-1 space-y-1">
+                      {routingDecision.reasoning.map((r, i) => (
+                        <li key={i}>{r}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
 
               <button
                 className={`w-full py-2.5 rounded-md font-medium text-sm transition-all duration-300 ${

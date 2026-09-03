@@ -59,6 +59,14 @@ def get_hardware_status():
     """Returns system status directly to the UI header pill."""
     return {"profile": clearance["profile"], "status": clearance["status"]}
 
+class JobSpecRequest(BaseModel):
+    op_type: str = "photo-gen"
+
+@app.post("/api/gatekeeper/route-decision")
+def get_route_decision(payload: JobSpecRequest):
+    """Dynamically routes a job based on real-time hardware telemetry."""
+    return gatekeeper.evaluate_job_routing({"op_type": payload.op_type})
+
 @app.get("/api/preflight/check")
 def run_preflight_check():
     return gatekeeper.evaluate_model_compatibility()

@@ -73,3 +73,65 @@ class HardwareGatekeeper:
 
         logging.info(f"Startup Clearance Granted. Target Engine Profile: {profile}")
         return {"status": "ALLOWED", "profile": profile}
+
+    def evaluate_job_routing(self, job_spec: dict):
+        """
+        Dynamically evaluates current hardware headroom (VRAM/RAM) to make a routing decision.
+        """
+        reasoning = []
+        op_type = job_spec.get("op_type", "photo-gen")
+        
+        # 1. Read live available memory
+        free_ram_gb = psutil.virtual_memory().available / (1024 ** 3)
+        reasoning.append(f"Detected {free_ram_gb:.1f}GB available System RAM.")
+        
+        free_vram_gb = 0.0
+        if torch.cuda.is_available():
+            try:
+                free_bytes, total_bytes = torch.cuda.mem_get_info()
+                free_vram_gb = free_bytes / (1024 ** 3)
+                reasoning.append(f"Detected {free_vram_gb:.1f}GB VRAM headroom.")
+            except Exception as e:
+                logging.error(f"Failed to read live VRAM: {e}")
+                free_vram_gb = self.vram * 0.5 # fallback
+                reasoning.append(f"Estimated {free_vram_gb:.1f}GB VRAM headroom (fallback).")
+        else:
+            reasoning.append("No CUDA detected. Assuming CPU/DirectML unified memory model.")
+            free_vram_gb = free_ram_gb * 0.5 # rough estimate for integrated/shared memory
+        
+        # 2. Make routing decisions
+        resolution = "512x512"
+        precision = "fp32"
+        batch_size = 1
+        
+        if op_type == "photo-gen":
+            if free_vram_gb >= 8.0:
+                precision = "fp16"
+                resolution = "1024x1024"
+                batch_size = 1
+                reasoning.append(f"VRAM headroom >= 8GB -> {precision} selected for speed, resolution maxed at {resolution}.")
+            elif free_vram_gb >= 4.0:
+                precision = "fp16"
+                resolution = "768x768"
+                batch_size = 1
+                reasoning.append(f"VRAM headroom between 4-8GB -> {precision} selected over fp32, resolution capped at {resolution} to stay under working set.")
+            else:
+                precision = "fp32" if not torch.cuda.is_available() else "fp16"
+                resolution = "512x512"
+                reasoning.append(f"Low VRAM headroom (<4GB) -> resolution restricted to {resolution}, precision set to {precision}.")
+                
+        elif op_type == "manga-panel-extract":
+            resolution = "Native"
+            if free_ram_gb > 8.0:
+                batch_size = 4
+                reasoning.append("High System RAM available -> extracting up to 4 panels in parallel.")
+            else:
+                batch_size = 1
+                reasoning.append("Low System RAM -> extracting sequentially (batch size 1).")
+        
+        return {
+            "resolution": resolution,
+            "precision": precision,
+            "batch_size": batch_size,
+            "reasoning": reasoning
+        }
