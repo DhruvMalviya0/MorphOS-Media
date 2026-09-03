@@ -1,6 +1,11 @@
 import os
+import logging
+import warnings
 # os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"  # Drops annoying warnings
 # os.environ["HF_HUB_OFFLINE"] = "1"            # ONE-TIME DOWNLOAD MODE: uncomment to restore offline lock after model is cached
+
+logging.getLogger("transformers").setLevel(logging.CRITICAL)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 import uvicorn
 import sys
@@ -108,7 +113,9 @@ def generate_photo(payload: GenerationRequest):
             "prompt_received": payload.prompt
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Inference failure: {str(e)}")
+        import traceback
+        tb = traceback.format_exc()
+        raise HTTPException(status_code=500, detail=f"Inference failure: {str(e)}\nTraceback:\n{tb}")
 
 @app.post("/api/process/audio")
 def process_audio(payload: AudioRequest):
@@ -153,10 +160,11 @@ def analyze_audio_track(payload: AudioAnalysisRequest):
         if "error" in analysis_report:
             raise HTTPException(status_code=400, detail=analysis_report["error"])
         return analysis_report
-    except HTTPException as he:
-        raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"DSP Analysis parsing failed: {str(e)}")
+        import traceback
+        tb = traceback.format_exc()
+        print(f"[Photo Engine API Error] Generation crashed: {e}\n{tb}")
+        raise HTTPException(status_code=500, detail=f"DSP Analysis parsing failed: {e}\n{tb}")
 
 @app.post("/api/audio/modify")
 def modify_audio_tempo(payload: AudioModifyRequest):

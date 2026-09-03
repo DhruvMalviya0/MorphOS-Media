@@ -50,6 +50,7 @@ class MorphPhotoEngine:
                 try:
                     # Enable sequential CPU offload to bring VRAM footprint under 2-3 GB
                     self.pipeline.enable_sequential_cpu_offload()
+                    self.pipeline.set_progress_bar_config(disable=True)
                     print("[Photo Engine] Success! VRAM protection shields armed with sequential CPU offloading.")
                 except Exception as offload_err:
                     self.pipeline.to("cuda")

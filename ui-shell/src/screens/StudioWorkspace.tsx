@@ -752,6 +752,12 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
                 </button>
                 <button 
                   className="px-3 bg-[#2a2a2a] hover:bg-[#333] text-gray-300 rounded-md transition-colors text-xs border border-[#444]"
+                  onClick={() => document.getElementById('image-layer-upload')?.click()}
+                >
+                  Upload Image
+                </button>
+                <button 
+                  className="px-3 bg-[#2a2a2a] hover:bg-[#333] text-gray-300 rounded-md transition-colors text-xs border border-[#444]"
                   onClick={() => setShowRecipeSave(!showRecipeSave)}
                 >
                   Save Recipe

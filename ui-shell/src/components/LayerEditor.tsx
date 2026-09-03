@@ -86,6 +86,7 @@ export default function LayerEditor({
         
         if (initialBaseImageBase64 && ctx) {
           const img = new Image();
+          img.crossOrigin = "anonymous";
           await new Promise(r => { img.onload = r; img.src = initialBaseImageBase64; });
           ctx.drawImage(img, 0, 0, width, height);
         } else if (ctx) {
@@ -124,6 +125,7 @@ export default function LayerEditor({
         const ctx = canvas.getContext('2d');
         if (ctx) {
           const img = new Image();
+          img.crossOrigin = "anonymous";
           await new Promise(r => { img.onload = r; img.src = newExternalLayerBase64; });
           ctx.drawImage(img, 0, 0, width, height);
         }
@@ -132,17 +134,25 @@ export default function LayerEditor({
           id: generateId(), name: `AI Output ${Math.floor(Math.random()*1000)}`, kind: "raster", visible: true, opacity: 1.0, 
           blendMode: "source-over", locked: false, canvas: canvas, transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }
         };
-        const n = [...layers, newLayer];
-        setLayers(n);
-        setActiveLayerId(newLayer.id);
-        saveHistory(n);
-        if (onExternalLayerConsumedRef.current) {
-          onExternalLayerConsumedRef.current();
-        }
+        
+        let updatedLayers: Layer[] = [];
+        setLayers(prev => {
+          updatedLayers = [...prev, newLayer];
+          return updatedLayers;
+        });
+        
+        // Push side effects outside the state updater
+        setTimeout(() => {
+           setActiveLayerId(newLayer.id);
+           saveHistory(updatedLayers);
+           if (onExternalLayerConsumedRef.current) {
+             onExternalLayerConsumedRef.current();
+           }
+        }, 0);
       };
       injectLayer();
     }
-  }, [newExternalLayerBase64, width, height, layers, saveHistory]);
+  }, [newExternalLayerBase64, width, height]);
 
   // Expose Composite and Mask
   const pushUpdateToBackend = useCallback(() => {
@@ -401,6 +411,7 @@ export default function LayerEditor({
     reader.onload = async (event) => {
       const src = event.target?.result as string;
       const img = new Image();
+      img.crossOrigin = "anonymous";
       await new Promise(r => { img.onload = r; img.src = src; });
       
       const canvas = document.createElement('canvas');
@@ -474,6 +485,7 @@ export default function LayerEditor({
           const restoredLayers = await Promise.all(data.layers.map(async (l: any) => {
             if (l.kind === 'raster' && l.canvasDataUrl) {
               const img = new Image();
+          img.crossOrigin = "anonymous";
               await new Promise(r => { img.onload = r; img.src = l.canvasDataUrl; });
               const canvas = document.createElement('canvas');
               canvas.width = width; canvas.height = height;
