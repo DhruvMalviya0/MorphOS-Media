@@ -160,9 +160,9 @@ class MorphPhotoEngine:
                 print(f"[Photo Engine Error] Mask decode failed: {mask_err}. Using full-white fallback.")
 
         if mask_image is None:
-            # No mask drawn = preserve everything (full-black = no region selected for inpainting).
-            print("[Photo Engine] No inpainting mask provided. Using full-black preservation mask.")
-            mask_image = Image.new("L", (512, 512), 0)
+            # No mask drawn = regenerate everything (full-white = entire region selected for inpainting).
+            print("[Photo Engine] No inpainting mask provided. Using full-white regeneration mask.")
+            mask_image = Image.new("L", (512, 512), 255)
 
         execution_steps = min(steps, 4)
 
