@@ -29,6 +29,7 @@ function AppContent() {
   const [username, setUsername] = useState<string>("");
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>(null);
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>(INITIAL_PROJECTS);
+  const [chainedAsset, setChainedAsset] = useState<any>(null);
 
   const addRecentProject = (name: string, type: string, icon: any, accentColor: string) => {
     setRecentProjects(prev => [{ name, type, timestamp: "Just now", icon, accentColor }, ...prev]);
@@ -53,6 +54,12 @@ function AppContent() {
 
   const handleBackToDashboard = () => {
     setCurrentWorkspace(null);
+    setChainedAsset(null); // Clear chained asset on back
+  };
+
+  const handleChainToPhoto = (asset: any) => {
+    setChainedAsset(asset);
+    setCurrentWorkspace("visual-studio");
   };
 
   // ── Screen Router ────────────────────────────────────────────────────────
@@ -72,7 +79,7 @@ function AppContent() {
   }
 
   if (currentWorkspace === "visual-studio") {
-    return <StudioWorkspace defaultTab="photo" onBack={handleBackToDashboard} />;
+    return <StudioWorkspace defaultTab="photo" onBack={handleBackToDashboard} chainedAsset={chainedAsset} />;
   }
 
   if (currentWorkspace === "audio-daw") {
@@ -81,7 +88,7 @@ function AppContent() {
 
   // Manga Motion
   if (currentWorkspace === "manga-motion") {
-    return <MangaWorkspace onBack={handleBackToDashboard} addRecentProject={addRecentProject} />;
+    return <MangaWorkspace onBack={handleBackToDashboard} addRecentProject={addRecentProject} onChainToPhoto={handleChainToPhoto} />;
   }
 
   return null;

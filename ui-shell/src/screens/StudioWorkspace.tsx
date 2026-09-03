@@ -34,9 +34,10 @@ interface RoutingDecision {
 interface StudioWorkspaceProps {
   defaultTab?: "photo" | "audio";
   onBack: () => void;
+  chainedAsset?: any;
 }
 
-export default function StudioWorkspace({ defaultTab = "photo", onBack }: StudioWorkspaceProps) {
+export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedAsset }: StudioWorkspaceProps) {
   // Navigation & Viewport State Handles
   const [activeTab, setActiveTab] = useState<"photo" | "audio">(defaultTab);
   const [hardwareProfile, setHardwareProfile] = useState<string>("Detecting System Profile...");
@@ -116,13 +117,50 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack }: Studio
 
   // Reset mask canvas whenever the source image changes
   useEffect(() => {
-    if (maskCanvasRef.current) {
+    if (maskCanvasRef.current && !chainedAsset) {
       const ctx = maskCanvasRef.current.getContext("2d");
       if (ctx) ctx.clearRect(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height);
     }
-    setHasMask(false);
-    setIsMaskMode(false);
-  }, [activePhoto?.localUrl]);
+    if (!chainedAsset) {
+      setHasMask(false);
+      setIsMaskMode(false);
+    }
+  }, [activePhoto?.localUrl, chainedAsset]);
+
+  // Load chained asset on mount if provided
+  useEffect(() => {
+    if (chainedAsset && chainedAsset.kind === "manga_panel") {
+      setActiveTab("photo");
+      
+      const fileMeta: MediaFile = {
+        name: `manga_panel_${chainedAsset.asset_id.substring(0, 5)}.png`,
+        size: "Chained Asset",
+        type: "photo",
+        localUrl: chainedAsset.metadata.base_image_url
+      };
+      
+      setActivePhoto(fileMeta);
+      setStudioLogs(`[OK] Loaded chained manga panel: ${fileMeta.name}`);
+      
+      // Load mask base64 into canvas
+      if (chainedAsset.metadata.mask_base64) {
+        setIsMaskMode(true);
+        setHasMask(true);
+        
+        const img = new Image();
+        img.onload = () => {
+          if (maskCanvasRef.current) {
+            const ctx = maskCanvasRef.current.getContext("2d");
+            if (ctx) {
+              ctx.clearRect(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height);
+              ctx.drawImage(img, 0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height);
+            }
+          }
+        };
+        img.src = chainedAsset.metadata.mask_base64;
+      }
+    }
+  }, [chainedAsset]);
 
   // Universal Media Validator Matrix
   const validateAndProcessFile = (file: File) => {

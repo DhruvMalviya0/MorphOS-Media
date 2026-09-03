@@ -4,6 +4,7 @@ import { ArrowLeft, Upload, ArrowRight, Loader2, Maximize, Sliders, BookOpen, Zo
 interface MangaWorkspaceProps {
   onBack: () => void;
   addRecentProject?: (name: string, type: string, icon: any, accentColor: string) => void;
+  onChainToPhoto?: (asset: any) => void;
 }
 
 interface PanelData {
@@ -13,7 +14,7 @@ interface PanelData {
   sfxPrompt: string;
 }
 
-export default function MangaWorkspace({ onBack, addRecentProject }: MangaWorkspaceProps) {
+export default function MangaWorkspace({ onBack, addRecentProject, onChainToPhoto }: MangaWorkspaceProps) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [readingFlow, setReadingFlow] = useState<'rtl' | 'ltr'>('rtl');
   const [isExtracting, setIsExtracting] = useState(false);
@@ -128,6 +129,29 @@ export default function MangaWorkspace({ onBack, addRecentProject }: MangaWorksp
   };
 
   const activePanel = panelsData.find(p => p.id === activePanelId);
+
+  const handleSendToPhoto = async () => {
+    if (!activePanel) return;
+    
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/manga/panels/send-to-photo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image_base64: activePanel.image
+        })
+      });
+      
+      const data = await response.json();
+      if (response.ok && onChainToPhoto) {
+        onChainToPhoto(data.asset);
+      } else {
+        console.error("Failed to chain to photo engine:", data.detail);
+      }
+    } catch (err) {
+      console.error("Network error during chaining:", err);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-morph-bg text-white font-sans overflow-hidden">
@@ -319,6 +343,13 @@ export default function MangaWorkspace({ onBack, addRecentProject }: MangaWorksp
                         className="w-full bg-[#101010] border border-morph-border rounded-lg p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors h-24 resize-none"
                       />
                     </div>
+
+                    <button
+                      onClick={handleSendToPhoto}
+                      className="w-full mt-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Send to Photo Engine →
+                    </button>
                   </div>
                 )}
               </div>

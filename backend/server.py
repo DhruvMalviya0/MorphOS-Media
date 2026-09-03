@@ -248,5 +248,81 @@ def render_manga_comic(payload: MangaRenderRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Manga render failure: {str(e)}")
 
+# Feature 2: Cross-Engine Pipeline Chaining
+from typing import Literal
+import uuid
+import base64
+import cv2
+import numpy as np
+
+class MediaAsset(BaseModel):
+    asset_id: str
+    kind: Literal["image", "audio", "manga_panel"]
+    source_engine: str
+    file_path: str
+    metadata: dict = {}
+
+class SendToPhotoRequest(BaseModel):
+    image_base64: str
+
+# In-memory storage for media assets
+MEDIA_ASSETS_DB = {}
+
+@app.post("/api/manga/panels/send-to-photo")
+def send_panel_to_photo(payload: SendToPhotoRequest):
+    try:
+        asset_id = str(uuid.uuid4())
+        
+        # Decode base64 panel
+        header, encoded = payload.image_base64.split(",", 1) if "," in payload.image_base64 else ("", payload.image_base64)
+        img_data = base64.b64decode(encoded)
+        np_arr = np.frombuffer(img_data, np.uint8)
+        img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        
+        if img is None:
+            raise ValueError("Failed to decode image")
+            
+        # Create a real mask: simple edge-based mask (Canny) to preserve character edges but regenerate backgrounds,
+        # or a full white mask. Let's make an edge-based mask.
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 100, 200)
+        # Dilate edges slightly
+        kernel = np.ones((3,3), np.uint8)
+        edges = cv2.dilate(edges, kernel, iterations=1)
+        # Invert so edges are BLACK (preserve) and background is WHITE (regenerate)
+        mask_img = cv2.bitwise_not(edges)
+        
+        # Save images to disk
+        base_img_filename = f"manga_panel_{asset_id}.png"
+        mask_filename = f"manga_mask_{asset_id}.png"
+        base_img_path = os.path.join(public_output_dir, base_img_filename)
+        mask_path = os.path.join(public_output_dir, mask_filename)
+        
+        cv2.imwrite(base_img_path, img)
+        cv2.imwrite(mask_path, mask_img)
+        
+        # Create base64 of mask to send back to frontend immediately
+        _, buffer = cv2.imencode('.png', mask_img)
+        mask_b64 = "data:image/png;base64," + base64.b64encode(buffer).decode('utf-8')
+        
+        asset = MediaAsset(
+            asset_id=asset_id,
+            kind="manga_panel",
+            source_engine="manga",
+            file_path=base_img_path,
+            metadata={
+                "mask_file_path": mask_path,
+                "mask_base64": mask_b64,
+                "base_image_url": f"http://127.0.0.1:8000/static/outputs/{base_img_filename}"
+            }
+        )
+        
+        MEDIA_ASSETS_DB[asset_id] = asset
+        
+        return {"status": "SUCCESS", "asset": asset.dict()}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to chain to photo engine: {str(e)}")
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
