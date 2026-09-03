@@ -1,6 +1,7 @@
 import { useState, useEffect, ChangeEvent, DragEvent, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
 import "../App.css";
+import LayerEditor from "../components/LayerEditor";
 
 interface MediaFile {
   name: string;
@@ -614,72 +615,29 @@ export default function StudioWorkspace({ defaultTab = "photo", onBack, chainedA
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            {!activePhoto && !activeAudio ? (
+            {activeTab === 'audio' && !activeAudio ? (
               <div className="text-center">
                 <p className="text-gray-400 mb-2">Drag and drop media here or click to browse files</p>
-                <span className="text-xs text-gray-500 block mb-4">Supports: PNG, JPEG, WEBP, MP3, WAV</span>
-                <input type="file" id="media-picker" onChange={handleFileSelect} hidden accept="image/*,audio/*" />
+                <span className="text-xs text-gray-500 block mb-4">Supports: MP3, WAV</span>
+                <input type="file" id="media-picker" onChange={handleFileSelect} hidden accept="audio/*" />
                 <label htmlFor="media-picker" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded cursor-pointer transition-colors text-sm font-medium">
-                  Browse Files
+                  Browse Audio Files
                 </label>
+              </div>
+            ) : activeTab === 'photo' && !activePhoto && !chainedAsset ? (
+              <div className="w-full h-full flex flex-col">
+                <LayerEditor 
+                  onCompositeUpdate={(base64) => setImageBase64(base64)}
+                />
               </div>
             ) : (
               <div className="w-full h-full flex flex-col">
                 {/* Photo Workspace Viewport Layer */}
-                {activePhoto && (
-                  <div className="flex-1 flex flex-col h-full overflow-hidden">
-                    <div className="flex justify-between items-center p-3 border-b border-morph-border bg-[#161616] flex-shrink-0">
-                      <h4 className="text-sm font-medium">Visual Canvas Layer ({activePhoto.name})</h4>
-                      <button className="text-xs px-2 py-1 bg-red-900/30 text-red-400 hover:bg-red-900/50 rounded transition-colors" onClick={() => { setActivePhoto(null); setImageBase64(null); clearMask(); setIsMaskMode(false); }}>
-                        Remove
-                      </button>
-                    </div>
-                    {/* Stacked image + mask canvas overlay */}
-                    <div className="flex-1 relative overflow-hidden bg-black flex items-center justify-center">
-                      <img src={activePhoto.localUrl} alt="Active Studio Layer" className="w-full h-full object-contain pointer-events-none" />
-                      <canvas
-                        ref={maskCanvasRef}
-                        width={512}
-                        height={512}
-                        className={`absolute top-0 left-0 w-full h-full opacity-65 ${isMaskMode ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'}`}
-                        onMouseDown={startDrawing}
-                        onMouseMove={continueDrawing}
-                        onMouseUp={stopDrawing}
-                        onMouseLeave={stopDrawing}
-                      />
-                    </div>
-                    {/* Mask Toolbar */}
-                    <div className="flex gap-2 items-center p-3 bg-[#161616] border-t border-morph-border flex-shrink-0 flex-wrap">
-                      <button
-                        className={`px-3 py-1.5 text-xs font-medium rounded transition-colors flex-shrink-0 ${isMaskMode ? 'bg-blue-500 text-white' : 'bg-[#2a2a2a] text-gray-300 hover:bg-[#333]'}`}
-                        onClick={() => setIsMaskMode(prev => !prev)}
-                      >
-                        {isMaskMode ? '🖊️ Drawing...' : '✏️ Draw Mask'}
-                      </button>
-                      <button
-                        className="px-3 py-1.5 text-xs font-medium bg-[#2a2a2a] text-gray-300 hover:bg-[#333] rounded transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={clearMask}
-                        disabled={!hasMask}
-                      >
-                        🗑️ Clear
-                      </button>
-                      {hasMask && (
-                        <span className="text-[11px] text-teal-400 drop-shadow-[0_0_6px_rgba(45,212,191,0.4)]">● Mask active</span>
-                      )}
-                      <span className="text-[11px] text-gray-400 ml-auto hidden sm:inline-block">
-                        Paint a mask over the specific target area to regenerate. Unpainted pixels will remain strictly locked.
-                      </span>
-                    </div>
-                    {isMaskMode && (
-                      <div className="p-3 bg-[#161616] border-t border-morph-border flex-shrink-0">
-                        <div className="flex justify-between items-center mb-1">
-                          <label className="text-[11px] text-gray-300">Brush Size</label>
-                          <span className="text-[11px] text-blue-400">{brushSize}px</span>
-                        </div>
-                        <input type="range" className="w-full accent-blue-500" min="5" max="80" value={brushSize} onChange={(e) => setBrushSize(parseInt(e.target.value))} />
-                      </div>
-                    )}
-                  </div>
+                {activeTab === 'photo' && (
+                  <LayerEditor 
+                    initialBaseImageBase64={activePhoto ? (activePhoto.localUrl.startsWith("http") ? activePhoto.localUrl : imageBase64) : null}
+                    onCompositeUpdate={(base64) => setImageBase64(base64)}
+                  />
                 )}
 
                 {/* Audio Workspace Timeline Layer */}
